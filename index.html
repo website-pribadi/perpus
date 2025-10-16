@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Perpustakaan Pribadi</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #92FE9D);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .logo {
+      margin-top: 150px;
+    }
+
+    .logo img {
+      width: 300px;
+      height: auto;
+    }
+
+    h1 {
+      color: #2980b9;
+      margin: 20px 0 10px;
+    }
+
+    p.subtitle {
+      color: #555;
+      margin: 0 0 30px;
+    }
+
+    .search-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #dceef8;
+      border-radius: 30px;
+      padding: 10px;
+      width: 80%;
+      max-width: 700px;
+      margin: auto;
+      margin-bottom: 20px;
+    }
+
+    .search-container input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    .search-container button {
+      background: #f06292;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .languages {
+      margin-top: 10px;
+    }
+
+    .languages span {
+      color: #555;
+    }
+
+    .languages a {
+      margin: 0 8px;
+      color: #2980b9;
+      text-decoration: none;
+    }
+
+    .languages a:hover {
+      text-decoration: underline;
+    }
+
+    .admin-area {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 999;
+    }
+
+    .admin-area a {
+      background: #2980b9;
+      color: white;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .admin-area a:hover {
+      background-color: #1f6391;
+    }
+
+    @keyframes fadeSlideIn {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      opacity: 0;
+      animation: fadeSlideIn 1s ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 2.0s; }
+    .delay-2 { animation-delay: 0.5s; }
+    .delay-3 { animation-delay: 0.7s; }
+    .delay-4 { animation-delay: 0.9s; }
+    .delay-5 { animation-delay: 1.1s; }
+
+    /* Tombol WhatsApp */
+    .wa-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25D366;
+      color: white;
+      font-weight: bold;
+      padding: 12px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px;
+      z-index: 999;
+      transition: background 0.3s;
+    }
+
+    .wa-button:hover {
+      background: #1ebd5a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Area Admin -->
+  <div class="admin-area fade-in delay-1">
+    <a href="pengguna.html">LIHAT PENGGUNA</a>
+    <a href="login.html">MASUK ADMIN</a>
+  </div>
+
+  <div class="logo fade-in delay-2">
+    <img src="logo.png" alt="Logo Perpustakaan">
+  </div>
+
+  <h1 class="fade-in delay-2">Perpustakaan Pribadi</h1>
+
+  <p class="subtitle fade-in delay-3">masukkan satu atau lebih kata kunci dari judul, penulis, atau kategori</p>
+
+  <div class="search-container fade-in delay-4">
+    <input type="text" id="searchInput" placeholder="Cari koleksi buku...">
+    <button onclick="cariBuku()">PENCARIAN</button>
+  </div>
+
+  <div class="languages fade-in delay-5">
+    <span>Pilih Bahasa :</span>
+    <a href="#">English</a>
+    <a href="#">Indonesia</a>
+    <a href="#">Arabic</a>
+  </div>
+
+  <!-- Tombol WhatsApp -->
+  <a href="https://wa.me/6285932220909?text=Halo%20Admin%20Perpustakaan%2C%20saya%20ingin%20bertanya%20tentang%20koleksi%20buku." 
+     class="wa-button" target="_blank" title="Hubungi Admin via WhatsApp">💬 Hubungi Admin</a>
+
+  <script>
+    function cariBuku() {
+      const keyword = document.getElementById("searchInput").value.trim();
+      if (keyword) {
+        window.location.href = `lihat-koleksi.html?q=${encodeURIComponent(keyword)}`;
+      }
+    }
+
+    document.getElementById("searchInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        cariBuku();
+      }
+    });
+  </script>
+
+</body>
+</html>

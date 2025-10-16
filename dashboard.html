@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Koleksi Buku</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #92FE9D);
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .stat {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      min-width: 200px;
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 2em;
+      color: #2980b9;
+    }
+    .card p {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #555;
+    }
+    canvas {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📚 Dashboard Koleksi Buku</h1>
+
+<div class="stat">
+  <div class="card">
+    <h2 id="totalBuku">0</h2>
+    <p>Total Buku</p>
+  </div>
+  <div class="card">
+    <h2 id="jumlahKategori">0</h2>
+    <p>Jumlah Kategori</p>
+  </div>
+  <div class="card">
+    <h2 id="bukuBaru">0</h2>
+    <p>Buku Baru (7 Hari)</p>
+  </div>
+  <div class="card">
+    <h2 id="tanpaKlasifikasi">0</h2>
+    <p>Tanpa Klasifikasi</p>
+  </div>
+</div>
+
+<canvas id="chartKategori" height="100"></canvas>
+<canvas id="chartPenulis" height="100"></canvas>
+
+<script>
+  const supabaseClient = supabase.createClient(
+    "https://lvlufkkwdydpaunqhcjw.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo"
+  );
+
+  async function loadStatistik() {
+    const { data: buku } = await supabaseClient.from("buku").select("*");
+    if (!buku) return;
+
+    document.getElementById("totalBuku").textContent = buku.length;
+
+    // Kategori unik
+    const kategoriSet = new Set(buku.map(b => b.kategori).filter(Boolean));
+    document.getElementById("jumlahKategori").textContent = kategoriSet.size;
+
+    // Buku baru 7 hari terakhir
+    const now = new Date();
+    const semingguLalu = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+    const bukuBaru = buku.filter(b => new Date(b.created_at) >= semingguLalu);
+    document.getElementById("bukuBaru").textContent = bukuBaru.length;
+
+    // Buku tanpa klasifikasi
+    const tanpaKlasifikasi = buku.filter(b => !b.klasifikasi || b.klasifikasi.trim() === "");
+    document.getElementById("tanpaKlasifikasi").textContent = tanpaKlasifikasi.length;
+
+    // Analisis grafik
+    tampilkanChartKategori(buku);
+    tampilkanChartPenulis(buku);
+  }
+
+  function tampilkanChartKategori(buku) {
+    const kategoriCount = {};
+    buku.forEach(b => {
+      const kat = b.kategori || "Tidak ada";
+      kategoriCount[kat] = (kategoriCount[kat] || 0) + 1;
+    });
+
+    const labels = Object.keys(kategoriCount);
+    const data = labels.map(k => kategoriCount[k]);
+
+    new Chart(document.getElementById("chartKategori"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Jumlah Buku per Kategori",
+          data,
+          backgroundColor: "#2980b9"
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: "Kategori" }},
+          y: { beginAtZero: true, title: { display: true, text: "Jumlah" }}
+        }
+      }
+    });
+  }
+
+  function tampilkanChartPenulis(buku) {
+    const penulisCount = {};
+    buku.forEach(b => {
+      const pen = b.penulis || "Tidak ada";
+      penulisCount[pen] = (penulisCount[pen] || 0) + 1;
+    });
+
+    // Ambil 10 penulis teratas
+    const sorted = Object.entries(penulisCount).sort((a,b) => b[1]-a[1]).slice(0,10);
+    const labels = sorted.map(([pen]) => pen);
+    const data = sorted.map(([_, jml]) => jml);
+
+    new Chart(document.getElementById("chartPenulis"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Top 10 Penulis Berdasarkan Jumlah Buku",
+          data,
+          backgroundColor: "#8e44ad"
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: "Penulis" }},
+          y: { beginAtZero: true, title: { display: true, text: "Jumlah Buku" }}
+        }
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", loadStatistik);
+</script>
+
+</body>
+</html>

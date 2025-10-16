@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Riwayat Peminjaman</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF);
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #00bcd4;
+      color: white;
+    }
+    .green { color: green; font-weight: bold; }
+    .orange { color: orange; font-weight: bold; }
+    .red { color: red; font-weight: bold; }
+    a {
+      text-decoration: none;
+      color: #0d8f3b;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📚 Riwayat Peminjaman Buku</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Judul Buku</th>
+      <th>Nama Peminjam</th>
+      <th>Tgl Pinjam</th>
+      <th>Tgl Kembali</th>
+      <th>Status</th>
+      <th>Keterangan</th>
+    </tr>
+  </thead>
+  <tbody id="tabelRiwayat"></tbody>
+</table>
+
+<script>
+  const supabaseClient = supabase.createClient(
+    "https://lvlufkkwdydpaunqhcjw.supabase.co",
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo" // ganti dengan anon key kamu
+  );
+
+  async function tampilkanRiwayat() {
+    const { data: pinjam, error } = await supabaseClient
+      .from("peminjaman")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error || !pinjam) {
+      alert("Gagal memuat riwayat peminjaman");
+      return;
+    }
+
+    const tbody = document.getElementById("tabelRiwayat");
+    tbody.innerHTML = "";
+
+    const today = new Date().toISOString().split("T")[0];
+
+    for (const row of pinjam) {
+      const { data: buku } = await supabaseClient
+        .from("buku")
+        .select("judul")
+        .eq("id", row.id_buku)
+        .single();
+
+      const judul = buku?.judul || "-";
+
+      let keterangan = "";
+      let kls = "";
+
+      if (row.status === "Dikembalikan") {
+        keterangan = "Sudah dikembalikan";
+        kls = "green";
+      } else if (row.status === "Dipinjam" && row.tanggal_kembali < today) {
+        keterangan = "Lambat";
+        kls = "red";
+      } else {
+        keterangan = "Belum dikembalikan";
+        kls = "orange";
+      }
+
+      // Tombol WA hanya jika telat dan status = Dipinjam
+      let tombolWA = "";
+      if (
+        row.status === "Dipinjam" &&
+        row.tanggal_kembali < today &&
+        row.nomor_hp
+      ) {
+        const nomor = row.nomor_hp.replace(/^0/, "62");
+        const pesan = encodeURIComponent(
+          `Halo ${row.nama_peminjam}, buku "${judul}" yang Anda pinjam sudah lewat tanggal kembali (${row.tanggal_kembali}). Mohon segera dikembalikan.`
+        );
+        tombolWA = `<br><a href="https://wa.me/${nomor}?text=${pesan}" target="_blank">📤 Kirim WA</a>`;
+      }
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${judul}</td>
+        <td>${row.nama_peminjam}</td>
+        <td>${row.tanggal_pinjam}</td>
+        <td>${row.tanggal_kembali || "-"}</td>
+        <td>${row.status}</td>
+        <td class="${kls}">${keterangan}${tombolWA}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", tampilkanRiwayat);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hasil Pencarian Buku</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #00C9FF);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      text-align: center;
+      color: #444;
+      margin-bottom: 20px;
+    }
+
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+      max-width: 280px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img.cover {
+      width: 160px;
+      height: 220px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      object-fit: cover;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin: 15px 0 10px;
+    }
+
+    .card p {
+      margin: 4px 0;
+      text-align: left;
+    }
+
+    .barcode {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .barcode-label {
+      font-weight: bold;
+      font-size: 15px;
+      line-height: 1;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>📚 Hasil Pencarian Buku</h1>
+
+  <div class="card-container" id="tabel-koleksi">
+    <p>Memuat data...</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script>
+    const supabaseUrl = 'https://lvlufkkwdydpaunqhcjw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo';
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    function ambilKataKunci() {
+      const params = new URLSearchParams(window.location.search);
+      return (params.get("q") || "").toLowerCase();
+    }
+
+    async function loadKoleksi() {
+      const kataKunci = ambilKataKunci();
+      const { data, error } = await supabaseClient
+        .from('buku')
+        .select('*')
+        .order('id_inventaris', { ascending: true });
+
+      if (error) {
+        document.getElementById('tabel-koleksi').innerHTML = `<p style="color:red;">Gagal memuat data: ${error.message}</p>`;
+        return;
+      }
+
+      const semuaBuku = data || [];
+      const hasil = semuaBuku.filter(b =>
+        (b.judul || '').toLowerCase().includes(kataKunci) ||
+        (b.penulis || '').toLowerCase().includes(kataKunci) ||
+        (b.kategori || '').toLowerCase().includes(kataKunci)
+      );
+
+      tampilkanBuku(hasil);
+    }
+
+    function tampilkanBuku(data) {
+      const container = document.getElementById('tabel-koleksi');
+      container.innerHTML = '';
+
+      if (!data.length) {
+        container.innerHTML = '<p>Tidak ditemukan hasil yang cocok.</p>';
+        return;
+      }
+
+      data.forEach((buku, index) => {
+        const id = buku.id_inventaris || `INV-${index + 1}`;
+        const barcodeId = `barcode-${index}`;
+        const gambar = buku.gambar
+          ? `${supabaseUrl}/storage/v1/object/public/buku/${buku.gambar}`
+          : "https://via.placeholder.com/160x220?text=No+Cover";
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        card.innerHTML = `
+          <img src="${gambar}" alt="Sampul Buku" class="cover">
+          <h2>${buku.judul || '-'}</h2>
+          <p><strong>Penulis:</strong> ${buku.penulis || '-'}</p>
+          <p><strong>Kategori:</strong> ${buku.kategori || '-'}</p>
+          <p><strong>Klasifikasi:</strong> ${buku.klasifikasi || '-'}</p>
+          <p><strong>Tahun:</strong> ${buku.tahun || '-'}</p>
+          <div class="barcode">
+            <svg id="${barcodeId}"></svg>
+            <div class="barcode-label">${id}</div>
+          </div>
+        `;
+
+        container.appendChild(card);
+
+        JsBarcode(`#${barcodeId}`, id, {
+          format: 'CODE128',
+          displayValue: false,
+          width: 2,
+          height: 40
+        });
+      });
+    }
+
+    loadKoleksi();
+  </script>
+</body>
+</html>

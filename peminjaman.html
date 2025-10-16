@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Peminjaman Buku</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF);
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      color: #0097a7;
+    }
+    .form-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    form input, form select, form button {
+      display: block;
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #00bcd4;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📖 Form Peminjaman Buku</h1>
+
+<form onsubmit="tambahPeminjaman(); return false;">
+  <select id="idBukuSelect" required>
+    <option value="">-- Pilih Buku --</option>
+  </select>
+  <input type="text" id="namaPeminjam" placeholder="Nama Peminjam" required />
+  <input type="text" id="nomorHp" placeholder="Nomor WhatsApp" required />
+  <input type="date" id="tanggalPinjam" onchange="setTanggalKembali()" required />
+  <input type="hidden" id="tanggalKembali" />
+  <button type="submit">Pinjam Buku</button>
+</form>
+
+<script>
+  const supabaseClient = supabase.createClient(
+    "https://lvlufkkwdydpaunqhcjw.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo" // Ganti dengan anon key kamu
+  );
+
+  function setTanggalKembali() {
+    const tglPinjam = document.getElementById("tanggalPinjam").value;
+    if (!tglPinjam) return;
+
+    const dateObj = new Date(tglPinjam);
+    dateObj.setMonth(dateObj.getMonth() + 1);
+
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const dd = String(dateObj.getDate()).padStart(2, "0");
+
+    document.getElementById("tanggalKembali").value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  async function loadBukuTersedia() {
+    const { data: semuaBuku } = await supabaseClient.from("buku").select("id, judul");
+    const { data: dipinjam } = await supabaseClient.from("peminjaman").select("id_buku").eq("status", "Dipinjam");
+
+    const idTerpinjam = (dipinjam || []).map(p => p.id_buku);
+    const dropdown = document.getElementById("idBukuSelect");
+    dropdown.innerHTML = '<option value="">-- Pilih Buku --</option>';
+
+    (semuaBuku || []).forEach(buku => {
+      if (!idTerpinjam.includes(buku.id)) {
+        const opt = document.createElement("option");
+        opt.value = buku.id;
+        opt.textContent = buku.judul;
+        dropdown.appendChild(opt);
+      }
+    });
+  }
+
+  async function tambahPeminjaman() {
+    const idBuku = document.getElementById("idBukuSelect").value;
+    const nama = document.getElementById("namaPeminjam").value.trim();
+    const nomorHp = document.getElementById("nomorHp").value.trim();
+    const tgl = document.getElementById("tanggalPinjam").value;
+    const kembali = document.getElementById("tanggalKembali").value;
+
+    if (!idBuku || !nama || !nomorHp || !tgl || !kembali) {
+      alert("Isi semua kolom!");
+      return;
+    }
+
+    const { error } = await supabaseClient.from("peminjaman").insert({
+      id_buku: idBuku,
+      nama_peminjam: nama,
+      nomor_hp: nomorHp,
+      tanggal_pinjam: tgl,
+      tanggal_kembali: kembali,
+      status: "Dipinjam"
+    });
+
+    if (error) {
+      alert("Gagal menyimpan data: " + error.message);
+    } else {
+      alert("✅ Buku berhasil dipinjam.");
+      document.querySelector("form").reset();
+      loadBukuTersedia();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadBukuTersedia();
+  });
+</script>
+
+</body>
+</html>

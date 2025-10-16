@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Cetak Barcode</title>
+<link rel="icon" href="ikon.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF);
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2980b9;
+      margin-bottom: 20px;
+    }
+
+    .no-print {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .no-print button, .no-print select {
+      background: #f06292;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .no-print select {
+      background: white;
+      color: #333;
+      font-weight: normal;
+    }
+
+    .label-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .label {
+      width: 200px;
+      height: 90px;
+      background: white;
+      border-radius: 10px;
+      border: 2px solid #2980b9;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      position: relative;
+    }
+
+    .barcode-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .barcode-wrapper canvas {
+      margin-bottom: 4px;
+    }
+
+    .barcode-wrapper div:last-child {
+      font-size: 10px;
+      color: #333;
+    }
+
+    .judul-buku {
+      font-size: 9px;
+      font-weight: bold;
+      text-align: center;
+      max-width: 160px;
+      white-space: normal;
+      overflow-wrap: break-word;
+      margin-bottom: 2px;
+    }
+
+    .pilih-cetak {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      transform: scale(1.2);
+    }
+
+    @media print {
+      body { background: white; }
+      .no-print, h1, .pilih-cetak {
+        display: none;
+      }
+      .label {
+        box-shadow: none;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cetak Barcode Buku</h1>
+
+  <div class="no-print">
+    <select id="filterKategori" onchange="filterData()">
+      <option value="">📁 Semua Kategori</option>
+    </select>
+    <button onclick="cetakTerpilih()">🖨️ Cetak Terpilih</button>
+  </div>
+
+  <div class="label-container" id="labelContainer"></div>
+
+  <script>
+    const supabase = window.supabase.createClient(
+      'https://lvlufkkwdydpaunqhcjw.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo'
+    );
+
+    let semuaBuku = [];
+
+    async function ambilDataBuku() {
+      const { data: books, error } = await supabase
+        .from("buku")
+        .select("*")
+        .order("id_inventaris", { ascending: true });
+
+      if (error) {
+        console.error("Gagal mengambil data:", error.message);
+        return;
+      }
+
+      semuaBuku = books;
+      isiDropdownKategori(books);
+      tampilkanBarcode(books);
+    }
+
+    function isiDropdownKategori(books) {
+      const kategoriSet = new Set();
+      books.forEach(b => kategoriSet.add(b.kategori || "Tanpa Kategori"));
+
+      const select = document.getElementById("filterKategori");
+      kategoriSet.forEach(kat => {
+        const opt = document.createElement("option");
+        opt.value = kat;
+        opt.textContent = kat;
+        select.appendChild(opt);
+      });
+    }
+
+    function filterData() {
+      const kat = document.getElementById("filterKategori").value;
+      const hasil = kat ? semuaBuku.filter(b => b.kategori === kat) : semuaBuku;
+      tampilkanBarcode(hasil);
+    }
+
+    function tampilkanBarcode(books) {
+      const container = document.getElementById("labelContainer");
+      container.innerHTML = "";
+
+      books.forEach((buku, i) => {
+        const idInv = buku.id_inventaris || `INV-${i + 1}`;
+        const judul = buku.judul || "Tanpa Judul";
+
+        const labelDiv = document.createElement("div");
+        labelDiv.className = "label";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "pilih-cetak";
+        checkbox.checked = true;
+
+        const barcodeWrap = document.createElement("div");
+        barcodeWrap.className = "barcode-wrapper";
+
+        const judulDiv = document.createElement("div");
+        judulDiv.className = "judul-buku";
+        judulDiv.textContent = judul;
+
+        const canvas = document.createElement("canvas");
+
+        const labelText = document.createElement("div");
+        labelText.textContent = idInv;
+
+        barcodeWrap.appendChild(judulDiv);
+        barcodeWrap.appendChild(canvas);
+        barcodeWrap.appendChild(labelText);
+
+        labelDiv.appendChild(checkbox);
+        labelDiv.appendChild(barcodeWrap);
+        container.appendChild(labelDiv);
+
+        JsBarcode(canvas, idInv, {
+          format: "CODE128",
+          width: 1.5,
+          height: 40,
+          displayValue: false
+        });
+      });
+    }
+
+    function cetakTerpilih() {
+      document.querySelectorAll('.label').forEach(label => {
+        const cb = label.querySelector('.pilih-cetak');
+        if (!cb || !cb.checked) {
+          label.style.display = 'none';
+        }
+      });
+      window.print();
+      setTimeout(() => window.location.reload(), 1000);
+    }
+
+    ambilDataBuku();
+  </script>
+
+</body>
+</html>

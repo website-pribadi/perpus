@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login Admin</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #92FE9D);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .card {
+      background: #3289e7;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      width: 300px;
+      color: white;
+      opacity: 0;
+      transform: translateY(50px);
+      animation: fadeSlideIn 1s ease forwards;
+    }
+
+    @keyframes fadeSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 50px;
+      margin: 12px 0;
+      padding: 8px 12px;
+      transition: box-shadow 0.3s;
+    }
+
+    .input-group input {
+      border: none;
+      outline: none;
+      flex: 1;
+      padding: 8px;
+      border-radius: 50px;
+      font-size: 14px;
+    }
+
+    .input-group input:focus {
+      box-shadow: 0 0 8px #3289e7;
+    }
+
+    button {
+      background: #222;
+      color: white;
+      font-weight: bold;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-top: 12px;
+      letter-spacing: 1px;
+      transition: background 0.3s;
+      position: relative;
+    }
+
+    button:hover {
+      background: #000;
+    }
+
+    button.loading {
+      color: transparent;
+      pointer-events: none;
+    }
+
+    button.loading::after {
+      content: "⏳ Loading...";
+      color: white;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .back-home {
+      display: block;
+      padding: 10px;
+      background: #ddd;
+      color: #333;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin-top: 16px;
+      transition: background 0.3s;
+    }
+
+    .back-home:hover {
+      background: #bbb;
+    }
+
+    h3 {
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3>🔐 LOGIN ADMIN</h3>
+
+    <div class="input-group">
+      <span>👤</span>
+      <input type="text" id="username" placeholder="Username">
+    </div>
+
+    <div class="input-group">
+      <span>🔒</span>
+      <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <button onclick="login(this)">MASUK</button>
+    <a href="index.html" class="back-home">🔙 BACK TO HOME</a>
+  </div>
+
+  <script>
+  function login(button) {
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    const card = document.querySelector(".card");
+
+    if (!user || !pass) {
+      alert("Isi semua kolom!");
+      card.classList.add("shake");
+      setTimeout(() => card.classList.remove("shake"), 500);
+      return;
+    }
+
+    button.classList.add("loading");
+
+    setTimeout(() => {
+      if (user === "perpustakaan" && pass === "pribadi") {
+        // Simpan sesi login (hilang saat tab/browser ditutup)
+        sessionStorage.setItem("login", "true");
+        alert("Login berhasil, selamat datang admin!");
+        window.location.href = "admin-koleksi.html";
+      } else {
+        button.classList.remove("loading");
+        alert("Username atau Password salah!");
+        card.classList.add("shake");
+        setTimeout(() => card.classList.remove("shake"), 500);
+      }
+    }, 1000);
+  }
+
+  document.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") login(document.querySelector("button"));
+  });
+</script>
+
+</body>
+</html>

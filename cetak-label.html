@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Cetak Label Rak Buku</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #00C9FF);
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2980b9;
+      margin-bottom: 20px;
+    }
+
+    .no-print {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .no-print select, .no-print button {
+      background: #f06292;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .no-print select {
+      background: white;
+      color: #333;
+      font-weight: normal;
+    }
+
+    .label-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .label {
+      width: 240px;
+      height: 160px;
+      background: white;
+      border: 1px solid black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .label-header {
+      background: #d3d3d3;
+      width: 100%;
+      height: 43px;
+      text-align: center;
+      font-weight: bold;
+      padding: 6px 4px;
+      font-size: 15px;
+      line-height: 1.1;
+      box-sizing: border-box;
+      border-bottom: 1px solid black;
+    }
+
+    .line {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 4px 0;
+      color: #333;
+    }
+
+    .pilih-cetak {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      transform: scale(1.2);
+    }
+
+    @media print {
+      body { background: white; }
+      .no-print, h1, .pilih-cetak {
+        display: none;
+      }
+      .label {
+        box-shadow: none;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cetak Label Rak Buku</h1>
+
+  <div class="no-print">
+    <select id="filterKategori" onchange="filterData()">
+      <option value="">📁 Semua Kategori</option>
+    </select>
+    <button onclick="cetakTerpilih()">🖨️ Cetak Terpilih</button>
+  </div>
+
+  <div class="label-container" id="labelContainer"></div>
+
+  <script>
+    const supabase = window.supabase.createClient(
+      'https://lvlufkkwdydpaunqhcjw.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo'
+    );
+
+    let semuaBuku = [];
+
+    async function ambilData() {
+      const { data: books, error } = await supabase
+        .from('buku')
+        .select('judul, penulis, klasifikasi, kategori')
+        .order('id_inventaris', { ascending: true });
+
+      if (error) {
+        alert('Gagal memuat data: ' + error.message);
+        return;
+      }
+
+      semuaBuku = books;
+      isiDropdownKategori(books);
+      tampilkanLabel(books);
+    }
+
+    function isiDropdownKategori(books) {
+      const kategoriSet = new Set();
+      books.forEach(b => kategoriSet.add(b.kategori || "Tanpa Kategori"));
+
+      const select = document.getElementById("filterKategori");
+      kategoriSet.forEach(kat => {
+        const opt = document.createElement("option");
+        opt.value = kat;
+        opt.textContent = kat;
+        select.appendChild(opt);
+      });
+    }
+
+    function filterData() {
+      const kat = document.getElementById("filterKategori").value;
+      const hasil = kat ? semuaBuku.filter(b => b.kategori === kat) : semuaBuku;
+      tampilkanLabel(hasil);
+    }
+
+    function tampilkanLabel(books) {
+      const container = document.getElementById("labelContainer");
+      container.innerHTML = "";
+
+      books.forEach((b, i) => {
+        const SR = "SR";
+        const klasifikasi = b.klasifikasi || "000";
+        const pengarang = (b.penulis || "NNN").substring(0, 3).toUpperCase();
+        const judulHuruf = (b.judul || "X").substring(0, 1).toLowerCase();
+        const cetakan = "c.1";
+
+        const labelDiv = document.createElement("div");
+        labelDiv.className = "label";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "pilih-cetak";
+        checkbox.checked = true;
+
+        const header = document.createElement("div");
+        header.className = "label-header";
+        header.innerHTML = "Perpustakaan Pribadi<br>Achmad Khalid";
+
+        labelDiv.appendChild(checkbox);
+        labelDiv.appendChild(header);
+
+        [SR, klasifikasi, pengarang, judulHuruf, cetakan].forEach(txt => {
+          const line = document.createElement("div");
+          line.className = "line";
+          line.textContent = txt;
+          labelDiv.appendChild(line);
+        });
+
+        container.appendChild(labelDiv);
+      });
+    }
+
+    function cetakTerpilih() {
+      document.querySelectorAll('.label').forEach(label => {
+        const cb = label.querySelector('.pilih-cetak');
+        if (!cb || !cb.checked) {
+          label.style.display = 'none';
+        }
+      });
+      window.print();
+      setTimeout(() => window.location.reload(), 1000);
+    }
+
+    document.addEventListener("DOMContentLoaded", ambilData);
+  </script>
+
+</body>
+</html>

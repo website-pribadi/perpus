@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Koleksi Buku 📚</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #92FE9D);
+      margin: 0;
+      display: flex;
+    }
+    .sidebar {
+      width: 220px;
+      background: #00C9FF;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 12px;
+      background: #00bcd4;
+      border-radius: 8px;
+      text-align: center;
+      transition: 0.3s;
+    }
+    .sidebar a:hover {
+      background: #0097a5;
+    }
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      width: calc(100% - 220px);
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    th {
+      background: #00bcd4;
+      color: white;
+    }
+    .barcode-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .form-card {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .form-card h3 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .form-card input[type="text"],
+    .form-card input[type="number"],
+    .form-card input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+    .form-card button {
+      width: 100%;
+      padding: 12px;
+      background: #00bcd4;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .form-card button:hover {
+      background: #0097a7;
+    }
+    .action-button {
+      background-color: #00bcd4;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      padding: 6px 10px;
+      margin: 2px;
+      cursor: pointer;
+    }
+    .action-button:hover {
+      background-color: #0097a7;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="#" id="menu-daftar">📚 Daftar Buku</a>
+    <a href="#" id="menu-tambah">➕ Tambah Buku</a>
+    <a href="peminjaman.html">📖 Peminjaman</a>
+    <a href="pengembalian.html">🔄 Pengembalian</a>
+    <a href="riwayat.html">📚 Riwayat Peminjaman</a>
+    <a href="dashboard.html">📊 Dashboard</a>
+    <a href="index.html">📘 Lihat Publik</a>
+    <a href="cetak-barcode.html">🖨️ Cetak Barcode</a>
+    <a href="cetak-label.html">🏷️ Cetak Label</a>
+    <a href="login.html">🔒 Logout</a>
+  </div>
+
+  <div class="content">
+    <div id="daftarBukuSection">
+      <h3>Tambah Buku</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Judul</th>
+            <th>Penulis</th>
+            <th>Kategori</th>
+            <th>Klasifikasi</th>
+            <th>Tahun</th>
+            <th>Barcode</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tabelDaftarBuku"></tbody>
+      </table>
+    </div>
+
+    <div id="tambahBukuSection" style="display:none;">
+      <div class="form-card">
+        <h3 id="formTitle">Tambah Buku</h3>
+        <form onsubmit="tambahBuku(); return false;">
+          <input id="judulBaru" placeholder="Judul Buku" required type="text"/>
+          <input id="penulisBaru" placeholder="Penulis" required type="text"/>
+          <input id="kategoriBaru" placeholder="Kategori" required type="text"/>
+          <input id="klasifikasiBaru" placeholder="Klasifikasi" type="text"/>
+          <input id="tahunBaru" placeholder="Tahun Terbit" required type="number"/>
+          <input accept="image/*" id="gambarBaru" type="file"/>
+          <img id="previewGambar" src="" style="width: 120px; display: none; margin-bottom: 10px; border-radius: 6px; object-fit: cover;" alt="Preview Sampul"/>
+          <button id="btnSimpanBuku" type="submit">Simpan</button>
+	  <button type="button" id="btnBatalEdit" style="display:none;margin-top:10px;background:#f44336;color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;">
+	    ❌ Batal Edit
+	  </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const supabaseUrl = "https://lvlufkkwdydpaunqhcjw.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo"; // disingkat
+    const { createClient } = supabase;
+    const db = createClient(supabaseUrl, supabaseKey);
+
+    let bukuSedangDiedit = null;
+
+    async function tampilDaftarBuku() {
+      const { data: books, error } = await db.from("buku").select("*").order("id_inventaris", { ascending: true });
+      const tbody = document.getElementById("tabelDaftarBuku");
+      tbody.innerHTML = "";
+
+      books.forEach((buku, i) => {
+        const idInv = buku.id_inventaris || `INV-${String(i + 1).padStart(3, '0')}`;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${buku.judul}</td>
+          <td>${buku.penulis}</td>
+          <td>${buku.kategori}</td>
+          <td>${buku.klasifikasi || ''}</td>
+          <td>${buku.tahun}</td>
+          <td>
+            <div class="barcode-wrapper">
+              <canvas id="barcode-${i}"></canvas>
+              <div>${idInv}</div>
+            </div>
+          </td>
+          <td>
+            <button class="action-button" onclick="editBuku('${buku.id}')">✏️</button>
+            <button class="action-button" onclick="hapusBuku('${buku.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        JsBarcode(`#barcode-${i}`, idInv, {
+          format: "CODE128",
+          width: 1,
+          height: 30,
+          displayValue: false
+        });
+      });
+    }
+
+    async function tambahBuku() {
+      const judul = document.getElementById("judulBaru").value.trim();
+      const penulis = document.getElementById("penulisBaru").value.trim();
+      const kategori = document.getElementById("kategoriBaru").value.trim();
+      const klasifikasi = document.getElementById("klasifikasiBaru").value.trim();
+      const tahun = parseInt(document.getElementById("tahunBaru").value);
+      const fileInput = document.getElementById("gambarBaru");
+      const file = fileInput.files[0];
+
+      if (!judul || !penulis || !kategori || isNaN(tahun)) {
+        alert("❌ Lengkapi semua data buku!");
+        return;
+      }
+
+      if (bukuSedangDiedit) {
+        const updateData = { judul, penulis, kategori, klasifikasi, tahun };
+        if (file) {
+          const ext = file.name.split('.').pop();
+          const namaFileBaru = `${Date.now()}_EDIT_${bukuSedangDiedit}.${ext}`;
+          const { error: uploadError } = await db.storage.from("buku").upload(namaFileBaru, file);
+          if (uploadError) {
+            alert("❌ Gagal upload gambar baru: " + uploadError.message);
+            return;
+          }
+          updateData.gambar = namaFileBaru;
+        }
+        const { error } = await db.from("buku").update(updateData).eq("id", bukuSedangDiedit);
+        if (error) {
+          alert("❌ Gagal update buku: " + error.message);
+        } else {
+          alert("✅ Buku berhasil diperbarui!");
+          bukuSedangDiedit = null;
+          document.querySelector("form").reset();
+          document.getElementById("btnSimpanBuku").innerText = "Simpan";
+          tampilDaftarBuku();
+          document.getElementById("btnBatalEdit").style.display = "none";
+          document.getElementById("menu-daftar").click();
+        }
+        return;
+      }
+
+      const { data: semuaBuku } = await db.from("buku").select("id");
+      const idInventaris = "INV-" + String((semuaBuku?.length || 0) + 1).padStart(3, "0");
+
+      let namaFile = null;
+      if (file) {
+        const ext = file.name.split('.').pop();
+        namaFile = `${Date.now()}_${idInventaris}.${ext}`;
+        const { error: uploadError } = await db.storage.from("buku").upload(namaFile, file);
+        if (uploadError) {
+          alert("❌ Gagal mengupload gambar: " + uploadError.message);
+          return;
+        }
+      }
+
+      const { error } = await db.from("buku").insert([{ judul, penulis, kategori, klasifikasi, tahun, id_inventaris: idInventaris, gambar: namaFile }]);
+      if (error) {
+        alert("❌ Gagal menyimpan buku: " + error.message);
+      } else {
+        alert("✅ Buku berhasil disimpan!");
+        document.querySelector("form").reset();
+        tampilDaftarBuku();
+        document.getElementById("menu-daftar").click();
+      }
+    }
+
+    async function editBuku(id) {
+      const { data, error } = await db.from("buku").select("*").eq("id", id).single();
+      if (error || !data) {
+        alert("❌ Gagal mengambil data buku.");
+        return;
+      }
+      document.getElementById("judulBaru").value = data.judul;
+      document.getElementById("penulisBaru").value = data.penulis;
+      document.getElementById("kategoriBaru").value = data.kategori;
+      document.getElementById("klasifikasiBaru").value = data.klasifikasi || "";
+      document.getElementById("tahunBaru").value = data.tahun;
+      document.getElementById("gambarBaru").value = "";
+	const gambarUrl = data.gambar
+	  ? `${supabaseUrl}/storage/v1/object/public/buku/${data.gambar}`
+	  : null;
+	const preview = document.getElementById("previewGambar");
+	if (gambarUrl) {
+	  preview.src = gambarUrl;
+ 	 preview.style.display = "block";
+	} else {
+	  preview.style.display = "none";
+	}
+
+      bukuSedangDiedit = id;
+      document.getElementById("btnSimpanBuku").innerText = "Update";
+      document.getElementById("formTitle").innerText = "Edit Buku"
+      document.getElementById("btnBatalEdit").style.display = "block";
+      document.getElementById("menu-tambah").click();
+    }
+
+    async function hapusBuku(id) {
+      if (!confirm("Apakah kamu yakin ingin menghapus buku ini?")) return;
+      const { error } = await db.from("buku").delete().eq("id", id);
+      if (error) {
+        alert("❌ Gagal menghapus buku: " + error.message);
+      } else {
+        alert("✅ Buku berhasil dihapus!");
+        tampilDaftarBuku();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      tampilDaftarBuku();
+      document.getElementById("menu-daftar").addEventListener("click", function () {
+        document.getElementById("daftarBukuSection").style.display = "block";
+        document.getElementById("tambahBukuSection").style.display = "none";
+      });
+    document.getElementById("btnBatalEdit").addEventListener("click", function () {
+      bukuSedangDiedit = null;
+      document.querySelector("form").reset();
+      document.getElementById("btnSimpanBuku").innerText = "Simpan";
+      document.getElementById("formTitle").innerText = "Tambah Buku";
+      document.getElementById("previewGambar").style.display = "none";
+      this.style.display = "none";
+    });
+      document.getElementById("menu-tambah").addEventListener("click", function () {
+        document.getElementById("daftarBukuSection").style.display = "none";
+        document.getElementById("tambahBukuSection").style.display = "block";
+      });
+      document.getElementById("menu-daftar").click();
+    });
+  </script>
+
+  <script>
+    if (sessionStorage.getItem("login") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
