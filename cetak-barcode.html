@@ -2,66 +2,146 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Cetak Barcode</title>
-<link rel="icon" href="ikon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cetak Barcode Buku</title>
+  <link rel="icon" href="ikon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
+    /* Global Reset dan Font */
     body {
-      font-family: sans-serif;
-      background: linear-gradient(135deg, #00C9FF);
+      font-family: 'Poppins', sans-serif;
+      /* WARNA AWAL: Gradien Biru Cerah */
+      background: linear-gradient(135deg, #00C9FF); 
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      min-height: 100vh;
+      color: #333;
     }
 
+    /* Kontainer Utama untuk Padding dan Batas Lebar */
+    .main-content {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header */
     h1 {
       text-align: center;
+      /* WARNA AWAL: Biru Tua */
       color: #2980b9;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 2em;
     }
 
+    /* Kontrol (No Print) - KOTAK PUTIH DI BELAKANGNYA */
     .no-print {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      /* Padding Default (untuk mobile) */
+      padding: 15px; 
+      background-color: #ffffff;
+      /* Sudut Dibulatkan (20px) */
+      border-radius: 20px; 
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
     }
 
+    /* PENYESUAIAN KHUSUS UNTUK PC (Layar Besar) agar tidak berlebihan */
+    @media (min-width: 768px) {
+        .no-print {
+            /* Mengurangi padding vertikal dan horizontal di PC */
+            padding: 10px 20px; 
+            /* Memberi batas lebar maksimum */
+            max-width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+    
+    /* Tombol dan Select/Dropdown */
     .no-print button, .no-print select {
-      background: #f06292;
-      color: white;
       border: none;
-      padding: 10px 16px;
-      border-radius: 20px;
-      font-weight: bold;
+      padding: 10px 16px; 
+      /* Sudut Disamakan (20px) */
+      border-radius: 20px; 
+      font-weight: 600;
       cursor: pointer;
-      margin: 5px;
+      transition: background-color 0.3s, transform 0.1s;
+      font-size: 1em;
     }
 
+    /* Tombol Cetak Terpilih */
+    .no-print button {
+      /* WARNA AWAL: Pink/Merah Jambu */
+      background: #f06292; 
+      color: white;
+      font-weight: bold;
+    }
+
+    .no-print button:hover {
+      background: #e91e63; /* Pink yang lebih gelap saat hover */
+      transform: translateY(-1px);
+    }
+
+    /* Select/Dropdown Kategori */
     .no-print select {
-      background: white;
+      /* WARNA AWAL: Putih (agar sama dengan kode awal) */
+      background: white; 
       color: #333;
       font-weight: normal;
+      border: 1px solid #bdc3c7;
+      padding-right: 30px; 
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      /* Custom dropdown arrow (panah) */
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.4-6.3H18.8c-5.8%200-13.3%203.8-13.3%2013.3s7.5%2013.3%2013.3%2013.3h254.8c4.3%200%2013.4-3.8%2013.4-13.3%200-5.6-1.7-8.9-6.3-13.3z%22%2F%3E%3C%2Fsvg%3E');
+      background-repeat: no-repeat;
+      background-position: right 10px top 50%;
+      background-size: 10px auto;
     }
 
+    /* Kontainer Label */
     .label-container {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       justify-content: center;
+      padding-bottom: 50px;
     }
 
+    /* Label Barcode */
     .label {
-      width: 200px;
-      height: 90px;
-      background: white;
-      border-radius: 10px;
-      border: 2px solid #2980b9;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 220px; 
+      height: 100px;
+      background: #ffffff;
+      border-radius: 8px;
+      /* WARNA AWAL: Biru Tua pada Border */
+      border: 2px solid #2980b9; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 10px;
+      padding: 8px;
       position: relative;
+      transition: all 0.2s ease-in-out;
+      overflow: hidden;
+    }
+
+    /* Efek hover untuk desktop */
+    @media (min-width: 768px) {
+      .label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      }
     }
 
     .barcode-wrapper {
@@ -71,57 +151,116 @@
     }
 
     .barcode-wrapper canvas {
-      margin-bottom: 4px;
+      margin-top: 2px;
+      margin-bottom: 2px;
     }
 
-    .barcode-wrapper div:last-child {
-      font-size: 10px;
-      color: #333;
+    .barcode-id { 
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      letter-spacing: 0.5px;
     }
 
     .judul-buku {
-      font-size: 9px;
-      font-weight: bold;
+      font-size: 10px;
+      font-weight: 600;
+      /* WARNA AWAL: Biru Tua (Disamakan dengan border) */
+      color: #2980b9; 
       text-align: center;
-      max-width: 160px;
+      max-width: 200px;
       white-space: normal;
       overflow-wrap: break-word;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      line-height: 1.2;
     }
 
     .pilih-cetak {
       position: absolute;
-      top: 5px;
-      left: 5px;
-      transform: scale(1.2);
+      top: 8px;
+      right: 8px; 
+      transform: scale(1.3);
+      cursor: pointer;
     }
 
-    @media print {
-      body { background: white; }
-      .no-print, h1, .pilih-cetak {
-        display: none;
+    /* Responsif untuk Mobile */
+    @media (max-width: 767px) {
+      .main-content {
+        padding: 10px;
+      }
+      h1 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+      }
+      .no-print {
+        padding: 10px;
+      }
+      .no-print button, .no-print select {
+        width: 100%; /* Lebar Penuh di HP */
+        margin: 5px 0;
       }
       .label {
+        width: 100%; 
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 110px;
+      }
+      .label-container {
+        gap: 15px;
+      }
+      .judul-buku {
+        font-size: 11px;
+      }
+    }
+
+
+    /* Tampilan Cetak */
+    @media print {
+      body { background: white; margin: 0; padding: 0; }
+      .main-content { padding: 0; margin: 0; }
+      .no-print, h1, .pilih-cetak {
+        display: none !important;
+      }
+      .label {
+        width: 200px; 
+        height: 90px;
+        /* Border kembali terlihat saat cetak */
+        border: 1px solid #333; 
         box-shadow: none;
         page-break-inside: avoid;
+        margin: 5px; 
+      }
+      .label-container {
+        gap: 0;
+        justify-content: flex-start;
+      }
+      .judul-buku {
+        font-size: 9px;
+      }
+      .barcode-id {
+        font-size: 10px;
       }
     }
   </style>
 </head>
 <body>
 
-  <h1>Cetak Barcode Buku</h1>
+  <div class="main-content">
+    <h1>Cetak Barcode Buku 📚</h1>
 
-  <div class="no-print">
-    <select id="filterKategori" onchange="filterData()">
-      <option value="">📁 Semua Kategori</option>
-    </select>
-    <button onclick="cetakTerpilih()">🖨️ Cetak Terpilih</button>
+    <div class="no-print">
+      <select id="filterKategori" onchange="filterData()">
+        <option value="">📁 Semua Kategori</option>
+      </select>
+      <button onclick="cetakTerpilih()">🖨️ Cetak Barcode Terpilih</button>
+    </div>
+
+    <div class="label-container" id="labelContainer"></div>
   </div>
 
-  <div class="label-container" id="labelContainer"></div>
-
   <script>
+    // Konfigurasi Supabase Anda
     const supabase = window.supabase.createClient(
       'https://lvlufkkwdydpaunqhcjw.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo'
@@ -137,6 +276,7 @@
 
       if (error) {
         console.error("Gagal mengambil data:", error.message);
+        document.getElementById("labelContainer").innerHTML = '<p style="color:red; text-align:center;">Gagal memuat data buku.</p>';
         return;
       }
 
@@ -150,7 +290,9 @@
       books.forEach(b => kategoriSet.add(b.kategori || "Tanpa Kategori"));
 
       const select = document.getElementById("filterKategori");
-      kategoriSet.forEach(kat => {
+      select.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+
+      Array.from(kategoriSet).sort().forEach(kat => {
         const opt = document.createElement("option");
         opt.value = kat;
         opt.textContent = kat;
@@ -167,6 +309,11 @@
     function tampilkanBarcode(books) {
       const container = document.getElementById("labelContainer");
       container.innerHTML = "";
+
+      if (books.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#546e7a; margin-top:50px;">Tidak ada buku ditemukan untuk kategori ini.</p>';
+        return;
+      }
 
       books.forEach((buku, i) => {
         const idInv = buku.id_inventaris || `INV-${i + 1}`;
@@ -190,6 +337,7 @@
         const canvas = document.createElement("canvas");
 
         const labelText = document.createElement("div");
+        labelText.className = "barcode-id"; 
         labelText.textContent = idInv;
 
         barcodeWrap.appendChild(judulDiv);
@@ -200,6 +348,7 @@
         labelDiv.appendChild(barcodeWrap);
         container.appendChild(labelDiv);
 
+        // Generate Barcode
         JsBarcode(canvas, idInv, {
           format: "CODE128",
           width: 1.5,
@@ -217,11 +366,21 @@
         }
       });
       window.print();
-      setTimeout(() => window.location.reload(), 1000);
+      // Tampilkan kembali semua label setelah cetak selesai
+      setTimeout(() => {
+          document.querySelectorAll('.label').forEach(label => {
+              label.style.display = 'flex';
+          });
+      }, 500);
     }
 
     ambilDataBuku();
   </script>
 
+  <script>
+    if (sessionStorage.getItem("login") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
