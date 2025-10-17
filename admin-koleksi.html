@@ -5,13 +5,19 @@
   <link rel="icon" href="ikon.png" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* --- GLOBAL STYLES & RESET --- */
     body {
       font-family: sans-serif;
       background: linear-gradient(135deg, #00C9FF, #92FE9D);
       margin: 0;
       display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
+
+    /* --- SIDEBAR (DEFAULT/DESKTOP) --- */
     .sidebar {
       width: 220px;
       background: #00C9FF;
@@ -21,6 +27,12 @@
       gap: 14px;
       height: 100vh;
       box-sizing: border-box;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      transition: all 0.3s ease-in-out;
+      overflow-y: auto;
     }
     .sidebar a {
       color: white;
@@ -35,13 +47,81 @@
     .sidebar a:hover {
       background: #0097a5;
     }
+
+    /* --- CONTENT (DEFAULT/DESKTOP) --- */
     .content {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
       display: flex;
+      flex-direction: column;
       width: calc(100% - 220px);
+      margin-left: 220px;
       box-sizing: border-box;
+    }
+    #daftarBukuSection {
+        width: 100%;
+    }
+    #tambahBukuSection {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding-top: 20px; /* Tambahkan padding atas agar tidak terlalu mepet */
+    }
+
+    /* --- MOBILE HEADER / HAMBURGER MENU --- */
+    .mobile-header {
+      display: none;
+      width: 100%;
+      background: #00C9FF;
+      color: white;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      justify-content: space-between;
+      align-items: center;
+      position: relative; /* Kontainer untuk posisi absolut teks */
+    }
+    .hamburger-button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px;
+      z-index: 1;
+    }
+    
+    .mobile-header .header-title {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+    }
+    .mobile-header .balance-spacer {
+        width: 24px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 990;
+      display: none;
+    }
+    .overlay.show {
+      display: block;
+    }
+
+    /* --- TABLE STYLES --- */
+    .table-responsive {
+        overflow-x: auto;
+        margin-top: 15px;
     }
     table {
       width: 100%;
@@ -57,6 +137,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 1em;
     }
     th {
       background: #00bcd4;
@@ -67,41 +148,88 @@
       flex-direction: column;
       align-items: center;
     }
+    .barcode-wrapper canvas {
+        width: 90px !important;
+        height: 30px !important;
+    }
+
+    /* --- FORM STYLES (PENINGKATAN TAMPILAN) --- */
     .form-card {
       width: 100%;
       max-width: 400px;
       background: white;
       padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 12px; /* Lebih kecil */
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15); /* Bayangan lebih halus */
+      border: 1px solid #e0e0e0; /* Border tipis */
     }
     .form-card h3 {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       text-align: center;
+      color: #0097a7;
+      border-bottom: 2px solid #00C9FF; /* Garis pemisah */
+      padding-bottom: 10px;
     }
+    /* Style untuk Input Text dan Number */
     .form-card input[type="text"],
-    .form-card input[type="number"],
-    .form-card input[type="file"] {
+    .form-card input[type="number"] {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
+      padding: 14px; /* Padding lebih besar */
+      margin-bottom: 18px;
       border: 1px solid #ccc;
       border-radius: 8px;
       box-sizing: border-box;
+      transition: border-color 0.3s;
+      font-size: 1em;
+    }
+    /* Efek fokus */
+    .form-card input[type="text"]:focus,
+    .form-card input[type="number"]:focus {
+        border-color: #00bcd4;
+        box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
+        outline: none;
+    }
+    /* Style untuk Input File */
+    .form-card input[type="file"] {
+        padding: 10px;
+        background: #f8f8f8;
+        border: 1px dashed #00bcd4; /* Border putus-putus */
+        margin-bottom: 15px;
+        border-radius: 8px;
     }
     .form-card button {
       width: 100%;
-      padding: 12px;
+      padding: 14px; /* Padding lebih besar */
       background: #00bcd4;
       color: white;
       font-weight: bold;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
     }
     .form-card button:hover {
       background: #0097a7;
+      transform: translateY(-2px); /* Efek sedikit naik */
     }
+    
+    #btnBatalEdit {
+        background: #f44336 !important;
+    }
+    #btnBatalEdit:hover {
+        background: #d32f2f !important;
+        transform: translateY(-2px);
+    }
+    
+    /* Gambar Preview */
+    #previewGambar {
+        display: block;
+        margin: 15px auto;
+        border: 3px solid #00bcd4;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
     .action-button {
       background-color: #00bcd4;
       border: none;
@@ -111,13 +239,72 @@
       margin: 2px;
       cursor: pointer;
     }
-    .action-button:hover {
-      background-color: #0097a7;
+
+    /* ==================================== */
+    /* --- RESPONSIVENESS (MOBILE) --- */
+    /* ==================================== */
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+      .sidebar {
+        width: 220px;
+        left: -220px;
+        padding-top: 60px;
+      }
+      .sidebar.open {
+        left: 0;
+        box-shadow: 10px 0 20px rgba(0, 0, 0, 0.2);
+      }
+      .content {
+        width: 100%;
+        margin-left: 0;
+        padding: 15px;
+        padding-top: 60px;
+      }
+      
+      /* FORM DI MOBILE */
+      .form-card {
+        padding: 20px; /* Padding form lebih kecil di mobile */
+      }
+      .form-card h3 {
+          font-size: 1.2em;
+      }
+      .form-card input[type="text"],
+      .form-card input[type="number"],
+      .form-card button {
+        padding: 12px; /* Input/button lebih kecil */
+      }
+      
+      /* TABEL KHUSUS MOBILE */
+      table {
+        min-width: 500px;
+        table-layout: auto;
+        font-size: 0.8em;
+      }
+      th, td {
+        padding: 6px 4px;
+        max-width: none;
+      }
+      .action-button {
+        padding: 4px 6px;
+        font-size: 0.75em;
+      }
+      .barcode-wrapper canvas {
+        width: 60px !important;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
+  
+  <div class="overlay" id="sidebarOverlay"></div>
+
+  <div class="sidebar" id="mainSidebar">
     <a href="#" id="menu-daftar">📚 Daftar Buku</a>
     <a href="#" id="menu-tambah">➕ Tambah Buku</a>
     <a href="peminjaman.html">📖 Peminjaman</a>
@@ -131,23 +318,32 @@
   </div>
 
   <div class="content">
+    
+    <div class="mobile-header">
+        <button class="hamburger-button" onclick="toggleSidebar()">☰</button>
+        <div class="header-title" style="font-weight: bold; font-size: 1.1em;">HALAMAN ADMIN</div> 
+        <span class="balance-spacer"></span> 
+    </div>
+
     <div id="daftarBukuSection">
-      <h3>Tambah Buku</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Judul</th>
-            <th>Penulis</th>
-            <th>Kategori</th>
-            <th>Klasifikasi</th>
-            <th>Tahun</th>
-            <th>Barcode</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="tabelDaftarBuku"></tbody>
-      </table>
+      <h3>Daftar Buku</h3>
+      <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Judul</th>
+                <th>Penulis</th>
+                <th>Kategori</th>
+                <th>Klasifikasi</th>
+                <th>Tahun</th>
+                <th>Barcode</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabelDaftarBuku"></tbody>
+          </table>
+      </div>
     </div>
 
     <div id="tambahBukuSection" style="display:none;">
@@ -159,10 +355,14 @@
           <input id="kategoriBaru" placeholder="Kategori" required type="text"/>
           <input id="klasifikasiBaru" placeholder="Klasifikasi" type="text"/>
           <input id="tahunBaru" placeholder="Tahun Terbit" required type="number"/>
+          
+          <label for="gambarBaru" style="display: block; margin-bottom: 5px; color: #555;">Sampul Buku (Opsional):</label>
           <input accept="image/*" id="gambarBaru" type="file"/>
+          
           <img id="previewGambar" src="" style="width: 120px; display: none; margin-bottom: 10px; border-radius: 6px; object-fit: cover;" alt="Preview Sampul"/>
+          
           <button id="btnSimpanBuku" type="submit">Simpan</button>
-	  <button type="button" id="btnBatalEdit" style="display:none;margin-top:10px;background:#f44336;color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;">
+	  <button type="button" id="btnBatalEdit" style="display:none;margin-top:10px;">
 	    ❌ Batal Edit
 	  </button>
         </form>
@@ -172,11 +372,27 @@
 
   <script>
     const supabaseUrl = "https://lvlufkkwdydpaunqhcjw.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo"; // disingkat
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo";
     const { createClient } = supabase;
     const db = createClient(supabaseUrl, supabaseKey);
 
     let bukuSedangDiedit = null;
+    
+    function toggleSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('mainSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+    }
 
     async function tampilDaftarBuku() {
       const { data: books, error } = await db.from("buku").select("*").order("id_inventaris", { ascending: true });
@@ -222,62 +438,71 @@
       const tahun = parseInt(document.getElementById("tahunBaru").value);
       const fileInput = document.getElementById("gambarBaru");
       const file = fileInput.files[0];
-
+      const btnSimpan = document.getElementById("btnSimpanBuku");
+      
       if (!judul || !penulis || !kategori || isNaN(tahun)) {
         alert("❌ Lengkapi semua data buku!");
         return;
       }
+      
+      btnSimpan.disabled = true;
+      const originalText = btnSimpan.innerText;
+      btnSimpan.innerText = bukuSedangDiedit ? "Memperbarui..." : "Menyimpan...";
 
-      if (bukuSedangDiedit) {
-        const updateData = { judul, penulis, kategori, klasifikasi, tahun };
-        if (file) {
-          const ext = file.name.split('.').pop();
-          const namaFileBaru = `${Date.now()}_EDIT_${bukuSedangDiedit}.${ext}`;
-          const { error: uploadError } = await db.storage.from("buku").upload(namaFileBaru, file);
-          if (uploadError) {
-            alert("❌ Gagal upload gambar baru: " + uploadError.message);
-            return;
+
+      try {
+          if (bukuSedangDiedit) {
+            const updateData = { judul, penulis, kategori, klasifikasi, tahun };
+            if (file) {
+              const ext = file.name.split('.').pop();
+              const namaFileBaru = `${Date.now()}_EDIT_${bukuSedangDiedit}.${ext}`;
+              const { error: uploadError } = await db.storage.from("buku").upload(namaFileBaru, file, { upsert: true });
+              if (uploadError) throw new Error("Gagal upload gambar baru: " + uploadError.message);
+              updateData.gambar = namaFileBaru;
+            }
+            const { error } = await db.from("buku").update(updateData).eq("id", bukuSedangDiedit);
+            if (error) throw new Error("Gagal update buku: " + error.message);
+
+            alert("✅ Buku berhasil diperbarui!");
+            resetForm();
+            tampilDaftarBuku();
+            document.getElementById("menu-daftar").click();
+            
+          } else {
+            const { data: semuaBuku } = await db.from("buku").select("id");
+            const idInventaris = "INV-" + String((semuaBuku?.length || 0) + 1).padStart(3, "0");
+
+            let namaFile = null;
+            if (file) {
+              const ext = file.name.split('.').pop();
+              namaFile = `${Date.now()}_${idInventaris}.${ext}`;
+              const { error: uploadError } = await db.storage.from("buku").upload(namaFile, file);
+              if (uploadError) throw new Error("Gagal mengupload gambar: " + uploadError.message);
+            }
+
+            const { error } = await db.from("buku").insert([{ judul, penulis, kategori, klasifikasi, tahun, id_inventaris: idInventaris, gambar: namaFile }]);
+            if (error) throw new Error("Gagal menyimpan buku: " + error.message);
+            
+            alert("✅ Buku berhasil disimpan!");
+            document.querySelector("form").reset();
+            tampilDaftarBuku();
+            document.getElementById("menu-daftar").click();
           }
-          updateData.gambar = namaFileBaru;
-        }
-        const { error } = await db.from("buku").update(updateData).eq("id", bukuSedangDiedit);
-        if (error) {
-          alert("❌ Gagal update buku: " + error.message);
-        } else {
-          alert("✅ Buku berhasil diperbarui!");
-          bukuSedangDiedit = null;
-          document.querySelector("form").reset();
-          document.getElementById("btnSimpanBuku").innerText = "Simpan";
-          tampilDaftarBuku();
-          document.getElementById("btnBatalEdit").style.display = "none";
-          document.getElementById("menu-daftar").click();
-        }
-        return;
+      } catch (e) {
+          alert("❌ Error: " + e.message);
+      } finally {
+          btnSimpan.disabled = false;
+          btnSimpan.innerText = originalText;
       }
-
-      const { data: semuaBuku } = await db.from("buku").select("id");
-      const idInventaris = "INV-" + String((semuaBuku?.length || 0) + 1).padStart(3, "0");
-
-      let namaFile = null;
-      if (file) {
-        const ext = file.name.split('.').pop();
-        namaFile = `${Date.now()}_${idInventaris}.${ext}`;
-        const { error: uploadError } = await db.storage.from("buku").upload(namaFile, file);
-        if (uploadError) {
-          alert("❌ Gagal mengupload gambar: " + uploadError.message);
-          return;
-        }
-      }
-
-      const { error } = await db.from("buku").insert([{ judul, penulis, kategori, klasifikasi, tahun, id_inventaris: idInventaris, gambar: namaFile }]);
-      if (error) {
-        alert("❌ Gagal menyimpan buku: " + error.message);
-      } else {
-        alert("✅ Buku berhasil disimpan!");
+    }
+    
+    function resetForm() {
+        bukuSedangDiedit = null;
         document.querySelector("form").reset();
-        tampilDaftarBuku();
-        document.getElementById("menu-daftar").click();
-      }
+        document.getElementById("btnSimpanBuku").innerText = "Simpan";
+        document.getElementById("formTitle").innerText = "Tambah Buku";
+        document.getElementById("previewGambar").style.display = "none";
+        document.getElementById("btnBatalEdit").style.display = "none";
     }
 
     async function editBuku(id) {
@@ -308,6 +533,7 @@
       document.getElementById("formTitle").innerText = "Edit Buku"
       document.getElementById("btnBatalEdit").style.display = "block";
       document.getElementById("menu-tambah").click();
+      closeSidebar();
     }
 
     async function hapusBuku(id) {
@@ -323,22 +549,57 @@
 
     document.addEventListener("DOMContentLoaded", function () {
       tampilDaftarBuku();
-      document.getElementById("menu-daftar").addEventListener("click", function () {
-        document.getElementById("daftarBukuSection").style.display = "block";
-        document.getElementById("tambahBukuSection").style.display = "none";
+      
+      const sidebarLinks = document.querySelectorAll('.sidebar a');
+
+      function toggleSection(showDaftar) {
+        document.getElementById("daftarBukuSection").style.display = showDaftar ? "block" : "none";
+        document.getElementById("tambahBukuSection").style.display = showDaftar ? "none" : "flex";
+        
+        sidebarLinks.forEach(link => link.classList.remove('active'));
+        if(showDaftar) {
+             document.getElementById("menu-daftar").classList.add('active');
+        } else {
+             document.getElementById("menu-tambah").classList.add('active');
+        }
+
+        closeSidebar();
+      }
+      
+      document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+      document.getElementById("menu-daftar").addEventListener("click", function (e) {
+        e.preventDefault();
+        toggleSection(true);
       });
-    document.getElementById("btnBatalEdit").addEventListener("click", function () {
-      bukuSedangDiedit = null;
-      document.querySelector("form").reset();
-      document.getElementById("btnSimpanBuku").innerText = "Simpan";
-      document.getElementById("formTitle").innerText = "Tambah Buku";
-      document.getElementById("previewGambar").style.display = "none";
-      this.style.display = "none";
-    });
-      document.getElementById("menu-tambah").addEventListener("click", function () {
-        document.getElementById("daftarBukuSection").style.display = "none";
-        document.getElementById("tambahBukuSection").style.display = "block";
+
+      document.getElementById("btnBatalEdit").addEventListener("click", function () {
+        resetForm();
+        document.getElementById("menu-daftar").click();
       });
+      
+      document.getElementById("menu-tambah").addEventListener("click", function (e) {
+        e.preventDefault();
+        toggleSection(false);
+      });
+      
+      sidebarLinks.forEach(link => {
+          if (!link.id) { 
+              link.addEventListener('click', closeSidebar);
+          }
+      });
+
+      document.getElementById("gambarBaru").addEventListener("change", function(event) {
+          const preview = document.getElementById("previewGambar");
+          const file = event.target.files[0];
+          if (file) {
+              preview.src = URL.createObjectURL(file);
+              preview.style.display = "block";
+          } else if (!bukuSedangDiedit) {
+              preview.style.display = "none";
+          }
+      });
+      
       document.getElementById("menu-daftar").click();
     });
   </script>
