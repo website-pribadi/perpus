@@ -2,118 +2,225 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cetak Label Rak Buku</title>
   <link rel="icon" href="ikon.png" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
+    /* Gaya Dasar - Warna Asli Dipertahankan */
     body {
-      font-family: sans-serif;
-      background: linear-gradient(135deg, #00C9FF, #00C9FF);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #00C9FF); /* Warna Asli */
       margin: 0;
       padding: 20px;
+      color: #333;
     }
 
     h1 {
       text-align: center;
       color: #2980b9;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-size: 2em;
     }
 
+    /* Kontrol Filter & Cetak */
     .no-print {
-      text-align: center;
-      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column; /* Default: Susun vertikal di HP */
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      padding: 15px; /* Padding dikembalikan */
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9); /* Kotak Putih Latar Belakang Dikembalikan */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+      /* Di HP, biarkan lebar mengikuti batas 90% atau penuh */
+      max-width: 90%; 
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .no-print select, .no-print button {
       background: #f06292;
       color: white;
       border: none;
-      padding: 10px 16px;
-      border-radius: 20px;
+      padding: 12px 18px;
+      border-radius: 25px; 
       font-weight: bold;
       cursor: pointer;
-      margin: 5px;
+      margin: 5px 0; 
+      transition: background 0.3s ease, transform 0.1s ease;
+      font-size: 1em;
+      width: 100%; /* Lebar penuh di HP */
+      max-width: 300px; /* Batasan lebar individual */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .no-print button:hover {
+      background: #e91e63;
+      transform: translateY(-1px);
     }
 
     .no-print select {
       background: white;
       color: #333;
       font-weight: normal;
+      border: 1px solid #ccc;
+      padding-right: 40px; 
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 14px;
     }
 
+    /* Container Label */
     .label-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 25px;
       justify-content: center;
+      padding: 10px;
     }
 
+    /* Gaya Label Rak - POJOK TIDAK MELENGKUNG */
     .label {
-      width: 240px;
-      height: 160px;
+      width: 250px;
+      height: 170px;
       background: white;
-      border: 1px solid black;
+      border: 1px solid black; 
+      border-radius: 0; /* POJOK TIDAK MELENGKUNG */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 0;
       overflow: hidden;
       position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .label:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
     }
 
     .label-header {
       background: #d3d3d3;
+      color: #333;
       width: 100%;
-      height: 43px;
+      height: 48px;
       text-align: center;
       font-weight: bold;
       padding: 6px 4px;
-      font-size: 15px;
-      line-height: 1.1;
+      font-size: 16px;
+      line-height: 1.2;
       box-sizing: border-box;
-      border-bottom: 1px solid black;
+      border-bottom: 1px solid black; 
     }
 
     .line {
-      font-size: 14px;
-      font-weight: bold;
+      font-size: 15px;
+      font-weight: 700;
       margin: 4px 0;
       color: #333;
+    }
+    
+    .label-header + .line {
+      margin-top: 10px;
     }
 
     .pilih-cetak {
       position: absolute;
-      top: 6px;
-      left: 6px;
-      transform: scale(1.2);
+      top: 10px;
+      left: 10px;
+      transform: scale(1.4);
+      cursor: pointer;
     }
 
+    /* Media Query untuk PC/Desktop (Layar Lebar) */
+    @media (min-width: 768px) {
+      .no-print {
+        display: inline-flex; /* KUNCI: Membuat lebar container seukuran konten */
+        flex-direction: row; 
+        justify-content: center;
+        gap: 15px;
+        /* Hapus max-width agar lebar menyesuaikan konten + padding */
+      }
+      
+      .no-print select, .no-print button {
+        width: auto;
+        min-width: 200px;
+        margin: 0; 
+      }
+      
+      .label-container {
+        padding: 20px 40px;
+      }
+      
+      /* Tambahan untuk memposisikan .no-print di tengah halaman */
+      body > .no-print {
+          display: block; /* Agar bisa menampung inline-flex di dalamnya */
+          text-align: center;
+          width: 100%; /* Lebar penuh body untuk sentralisasi */
+          padding: 0;
+      }
+      
+      body > .no-print > * {
+          display: inline-flex;
+      }
+    }
+
+    /* Aturan Cetak */
     @media print {
-      body { background: white; }
+      body { background: white; padding: 0; margin: 0; }
       .no-print, h1, .pilih-cetak {
         display: none;
       }
       .label {
-        box-shadow: none;
+        box-shadow: none !important;
+        border: 1px solid black;
+        width: 240px;
+        height: 160px;
         page-break-inside: avoid;
+        margin: 5px;
+        border-radius: 0; 
+      }
+      .label-container {
+          gap: 10px;
+          justify-content: flex-start;
+          align-content: flex-start;
+      }
+      .label-header {
+          background: #d3d3d3;
+          height: 43px;
+          font-size: 15px;
+          border-bottom: 1px solid black;
+      }
+      .line {
+          font-size: 14px;
+          margin: 4px 0;
       }
     }
   </style>
 </head>
 <body>
 
-  <h1>Cetak Label Rak Buku</h1>
+  <h1>📚 Cetak Label Rak Buku</h1>
 
-  <div class="no-print">
-    <select id="filterKategori" onchange="filterData()">
-      <option value="">📁 Semua Kategori</option>
-    </select>
-    <button onclick="cetakTerpilih()">🖨️ Cetak Terpilih</button>
+  <div style="text-align: center;">
+      <div class="no-print">
+        <select id="filterKategori" onchange="filterData()">
+          <option value="">📁 Semua Kategori</option>
+        </select>
+        <button onclick="cetakTerpilih()">🖨️ Cetak Terpilih</button>
+      </div>
   </div>
 
   <div class="label-container" id="labelContainer"></div>
 
   <script>
+    // Supabase config
     const supabase = window.supabase.createClient(
       'https://lvlufkkwdydpaunqhcjw.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo'
@@ -142,7 +249,14 @@
       books.forEach(b => kategoriSet.add(b.kategori || "Tanpa Kategori"));
 
       const select = document.getElementById("filterKategori");
-      kategoriSet.forEach(kat => {
+      // Reset options except the default one
+      while (select.options.length > 1) {
+          select.remove(1);
+      }
+      
+      const sortedKategori = Array.from(kategoriSet).sort();
+
+      sortedKategori.forEach(kat => {
         const opt = document.createElement("option");
         opt.value = kat;
         opt.textContent = kat;
@@ -163,7 +277,7 @@
       books.forEach((b, i) => {
         const SR = "SR";
         const klasifikasi = b.klasifikasi || "000";
-        const pengarang = (b.penulis || "NNN").substring(0, 3).toUpperCase();
+        const pengarang = (b.penulis && b.penulis.length >= 3) ? b.penulis.substring(0, 3).toUpperCase() : "NNN";
         const judulHuruf = (b.judul || "X").substring(0, 1).toLowerCase();
         const cetakan = "c.1";
 
@@ -196,16 +310,24 @@
     function cetakTerpilih() {
       document.querySelectorAll('.label').forEach(label => {
         const cb = label.querySelector('.pilih-cetak');
-        if (!cb || !cb.checked) {
-          label.style.display = 'none';
-        }
+        label.style.display = (cb && cb.checked) ? 'flex' : 'none';
       });
       window.print();
-      setTimeout(() => window.location.reload(), 1000);
+      
+      setTimeout(() => {
+          document.querySelectorAll('.label').forEach(label => {
+              label.style.display = 'flex';
+          });
+      }, 100);
     }
 
     document.addEventListener("DOMContentLoaded", ambilData);
   </script>
 
+  <script>
+    if (sessionStorage.getItem("login") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
