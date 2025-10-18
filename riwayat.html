@@ -32,7 +32,7 @@
 
     h1 {
       text-align: center;
-      color: white; /* Diubah menjadi putih agar kontras dengan background */
+      color: white; 
       font-weight: 600;
       letter-spacing: 0.5px;
       margin-bottom: 25px;
@@ -86,19 +86,33 @@
       background-color: #f9f9f9;
     }
 
-    /* Pengaturan Perataan Kolom */
-    /* Tgl Pinjam, Tgl Kembali, Status, Keterangan dibuat rata tengah */
-    th:nth-child(3), td:nth-child(3),
-    th:nth-child(4), td:nth-child(4),
-    th:nth-child(5), td:nth-child(5),
-    th:nth-child(6), td:nth-child(6) {
+    /* Pengaturan Perataan Kolom BARU */
+    /* No, Tgl Pinjam, Batas Kembali, Status, Keterangan dibuat rata tengah */
+    th:nth-child(1), td:nth-child(1), /* No */
+    th:nth-child(4), td:nth-child(4), /* Tgl Pinjam */
+    th:nth-child(5), td:nth-child(5), /* Batas Kembali */
+    th:nth-child(6), td:nth-child(6), /* Status */
+    th:nth-child(7), td:nth-child(7) /* Keterangan */
+    {
       text-align: center;
     }
+    
+    /* Kolom Judul Buku dan Nama Peminjam tetap Rata Kiri */
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) {
+        text-align: left;
+    }
+    
+    /* Lebar khusus untuk kolom No */
+    th:nth-child(1), td:nth-child(1) {
+        width: 1%; 
+    }
+
 
     /* Styling Status & Keterangan */
-    .green { color: #28a745; font-weight: bold; } /* Hijau yang lebih dalam */
-    .orange { color: #fd7e14; font-weight: bold; } /* Orange yang lebih solid */
-    .red { color: #dc3545; font-weight: bold; } /* Merah yang lebih solid */
+    .green { color: #28a745; font-weight: bold; } 
+    .orange { color: #fd7e14; font-weight: bold; } 
+    .red { color: #dc3545; font-weight: bold; } 
     
     a {
       display: inline-block;
@@ -127,10 +141,9 @@
         <table>
           <thead>
             <tr>
-              <th>Judul Buku</th>
-              <th>Nama Peminjam</th>
-              <th>Tgl Pinjam</th>
-              <th>Batas Kembali</th> <th>Status</th>
+              <th>No</th> <th>Nama Peminjam</th> <th>Judul Buku</th> <th>Tgl Pinjam</th>
+              <th>Batas Kembali</th>
+              <th>Status</th>
               <th>Keterangan</th>
             </tr>
           </thead>
@@ -163,7 +176,7 @@
     if (pinjam.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 30px; color: #888;">
+          <td colspan="7" style="text-align: center; padding: 30px; color: #888;">
             Tidak ada riwayat peminjaman.
           </td>
         </tr>
@@ -173,6 +186,7 @@
 
     // Mengambil tanggal hari ini dalam format YYYY-MM-DD
     const today = new Date().toISOString().split("T")[0];
+    let no = 1; // Inisialisasi nomor urut
 
     for (const row of pinjam) {
       const { data: buku } = await supabaseClient
@@ -214,9 +228,7 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${judul}</td>
-        <td>${row.nama_peminjam}</td>
-        <td>${row.tanggal_pinjam}</td>
+        <td>${no++}</td> <td>${row.nama_peminjam}</td> <td>${judul}</td> <td>${row.tanggal_pinjam}</td>
         <td>${row.tanggal_kembali || "-"}</td>
         <td>${row.status}</td>
         <td class="${kls}">${keterangan}${tombolWA ? '<br>' + tombolWA : ''}</td>
