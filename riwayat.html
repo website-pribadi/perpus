@@ -2,67 +2,147 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Riwayat Peminjaman</title>
   <link rel="icon" href="ikon.png" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
+    /* Menggunakan box-sizing untuk konsistensi layout */
+    html, body {
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: sans-serif;
+      /* Font stack modern untuk tampilan lebih bersih */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, #00C9FF);
       padding: 20px;
       margin: 0;
+      color: #333;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
+
+    /* Container utama untuk membatasi lebar di PC */
+    .container {
+      width: 100%;
+      max-width: 1100px; /* Batas lebar di PC */
+      margin: 0 auto;
+    }
+
     h1 {
       text-align: center;
-      color: #2c3e50;
+      color: white; /* Diubah menjadi putih agar kontras dengan background */
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 25px;
     }
+
+    /* Container untuk tabel: 
+      - Memberi background putih, shadow, dan border-radius
+      - overflow-x: auto agar bisa di-scroll di HP
+    */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
-      background: white;
+      margin: 0;
+      /* Memaksa tabel tidak terpotong di HP, memungkinkan scroll horizontal */
+      white-space: nowrap; 
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
+      /* Menggunakan border-bottom saja untuk tampilan modern */
+      border: none;
+      border-bottom: 1px solid #eee;
+      padding: 14px 18px; /* Padding lebih besar */
+      text-align: left; /* Default rata kiri */
+      vertical-align: middle;
+      font-size: 14px;
     }
+
     th {
       background: #00bcd4;
       color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .green { color: green; font-weight: bold; }
-    .orange { color: orange; font-weight: bold; }
-    .red { color: red; font-weight: bold; }
+    
+    /* Menghapus border di baris terakhir */
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Efek hover agar lebih interaktif */
+    tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    /* Pengaturan Perataan Kolom */
+    /* Tgl Pinjam, Tgl Kembali, Status, Keterangan dibuat rata tengah */
+    th:nth-child(3), td:nth-child(3),
+    th:nth-child(4), td:nth-child(4),
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6) {
+      text-align: center;
+    }
+
+    /* Styling Status & Keterangan */
+    .green { color: #28a745; font-weight: bold; } /* Hijau yang lebih dalam */
+    .orange { color: #fd7e14; font-weight: bold; } /* Orange yang lebih solid */
+    .red { color: #dc3545; font-weight: bold; } /* Merah yang lebih solid */
+    
     a {
+      display: inline-block;
       text-decoration: none;
-      color: #0d8f3b;
-      font-weight: bold;
+      color: white;
+      background: #25d366; /* Warna WhatsApp */
+      padding: 5px 10px;
+      border-radius: 50px;
+      font-weight: 600;
+      margin-top: 5px;
+      font-size: 13px;
+      transition: background 0.3s;
     }
+    a:hover {
+        background: #1eaf53;
+    }
+
   </style>
 </head>
 <body>
 
-<h1>📚 Riwayat Peminjaman Buku</h1>
+<div class="container">
+    <h1>📚 Riwayat Peminjaman Buku</h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>Judul Buku</th>
-      <th>Nama Peminjam</th>
-      <th>Tgl Pinjam</th>
-      <th>Tgl Kembali</th>
-      <th>Status</th>
-      <th>Keterangan</th>
-    </tr>
-  </thead>
-  <tbody id="tabelRiwayat"></tbody>
-</table>
+    <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Judul Buku</th>
+              <th>Nama Peminjam</th>
+              <th>Tgl Pinjam</th>
+              <th>Batas Kembali</th> <th>Status</th>
+              <th>Keterangan</th>
+            </tr>
+          </thead>
+          <tbody id="tabelRiwayat"></tbody>
+        </table>
+    </div>
+</div>
 
 <script>
   const supabaseClient = supabase.createClient(
-    "https://lvlufkkwdydpaunqhcjw.supabase.co",
- "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo" // ganti dengan anon key kamu
+    "https://zawtfjszvkuudawrilqg.supabase.co",
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd3RmanN6dmt1dWRhd3JpbHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTk2NzMsImV4cCI6MjA3NDk5NTY3M30.CGYz4-QnYb3Hu9p3fV0XoG5J8oicqZsji-YJf2UItQ8"
   );
 
   async function tampilkanRiwayat() {
@@ -78,7 +158,20 @@
 
     const tbody = document.getElementById("tabelRiwayat");
     tbody.innerHTML = "";
+    
+    // Tampilkan pesan jika tidak ada riwayat
+    if (pinjam.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 30px; color: #888;">
+            Tidak ada riwayat peminjaman.
+          </td>
+        </tr>
+      `;
+      return;
+    }
 
+    // Mengambil tanggal hari ini dalam format YYYY-MM-DD
     const today = new Date().toISOString().split("T")[0];
 
     for (const row of pinjam) {
@@ -97,10 +190,10 @@
         keterangan = "Sudah dikembalikan";
         kls = "green";
       } else if (row.status === "Dipinjam" && row.tanggal_kembali < today) {
-        keterangan = "Lambat";
+        keterangan = "TERLAMBAT";
         kls = "red";
       } else {
-        keterangan = "Belum dikembalikan";
+        keterangan = "Sedang dipinjam";
         kls = "orange";
       }
 
@@ -111,11 +204,12 @@
         row.tanggal_kembali < today &&
         row.nomor_hp
       ) {
-        const nomor = row.nomor_hp.replace(/^0/, "62");
+        // Logika WhatsApp: mengganti awalan '0' menjadi '62'
+        const nomor = row.nomor_hp.startsWith('0') ? row.nomor_hp.replace(/^0/, "62") : row.nomor_hp;
         const pesan = encodeURIComponent(
-          `Halo ${row.nama_peminjam}, buku "${judul}" yang Anda pinjam sudah lewat tanggal kembali (${row.tanggal_kembali}). Mohon segera dikembalikan.`
+          `Halo ${row.nama_peminjam}, buku "${judul}" yang Anda pinjam sudah lewat tanggal batas kembali (${row.tanggal_kembali}). Mohon segera dikembalikan.`
         );
-        tombolWA = `<br><a href="https://wa.me/${nomor}?text=${pesan}" target="_blank">📤 Kirim WA</a>`;
+        tombolWA = `<a href="https://wa.me/${nomor}?text=${pesan}" target="_blank">📤 Kirim WA</a>`;
       }
 
       const tr = document.createElement("tr");
@@ -125,7 +219,7 @@
         <td>${row.tanggal_pinjam}</td>
         <td>${row.tanggal_kembali || "-"}</td>
         <td>${row.status}</td>
-        <td class="${kls}">${keterangan}${tombolWA}</td>
+        <td class="${kls}">${keterangan}${tombolWA ? '<br>' + tombolWA : ''}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -133,6 +227,10 @@
 
   document.addEventListener("DOMContentLoaded", tampilkanRiwayat);
 </script>
-
+  <script>
+    if (sessionStorage.getItem("login") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>

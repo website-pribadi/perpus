@@ -4,75 +4,181 @@
   <meta charset="UTF-8" />
   <title>Hasil Pencarian Buku</title>
   <link rel="icon" href="ikon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
+    /* 1. STYLING GLOBAL & FONT */
     body {
       margin: 0;
-      padding: 40px 20px;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #00C9FF);
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #00C9FF, #92FE9D);
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden; 
     }
 
     h1 {
       text-align: center;
-      color: #444;
-      margin-bottom: 20px;
+      color: #333;
+      margin: 40px 0 40px;
+      font-weight: 700;
+      font-size: 28px;
     }
 
+    /* 2. CARD CONTAINER (Desktop) */
     .card-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      width: 95%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 30px;
+      justify-content: center;
+      padding: 0 20px 40px;
     }
 
+    /* 3. CARD STYLING (Desktop) */
     .card {
       background: white;
       border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
       padding: 20px;
-      max-width: 280px;
       text-align: center;
-      transition: transform 0.2s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 580px; /* Tinggi standar desktop */
     }
 
     .card:hover {
-      transform: scale(1.03);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
     }
 
     .card img.cover {
       width: 160px;
       height: 220px;
       border-radius: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       object-fit: cover;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .card h2 {
       font-size: 20px;
-      margin: 15px 0 10px;
+      margin: 10px 0 5px;
+      color: #00bcd4;
+      font-weight: 500;
+      min-height: 50px;
+      line-height: 1.2;
     }
 
     .card p {
       margin: 4px 0;
       text-align: left;
+      width: 100%;
+      font-size: 14px;
+      color: #555;
+      padding-left: 10px;
+      border-left: 3px solid #00C9FF;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .card p strong {
+        color: #333;
+        font-weight: 500;
+    }
+    
+    .card p span {
+        text-align: right;
     }
 
     .barcode {
-      margin-top: 10px;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px dashed #ddd;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     .barcode-label {
-      font-weight: bold;
-      font-size: 15px;
+      font-weight: 600;
+      font-size: 13px;
       line-height: 1;
-      margin: 0;
-      padding: 0;
+      margin-top: 5px;
+      color: #00bcd4;
+    }
+    
+    .loading-message {
+        font-size: 18px;
+        color: #777;
+        margin: 50px auto;
+    }
+
+    /* ========================================= */
+    /* 4. MEDIA QUERY (Responsif - OPTIMASI TINGGI VERTIKAL DI HP) */
+    /* ========================================= */
+    @media (max-width: 600px) {
+        h1 {
+            font-size: 24px;
+            margin: 15px 0 15px; /* Kurangi margin h1 */
+        }
+        .card-container {
+            width: 100%;
+            padding: 0 5px 15px; 
+            gap: 8px; /* Kurangi gap antar kartu */
+            grid-template-columns: repeat(2, 1fr); 
+        }
+        .card {
+            padding: 4px; /* Padding kartu sangat kecil */
+            border-radius: 8px;
+            /* PERUBAHAN KRUSIAL: Hapus atau minimalkan min-height */
+            min-height: auto; 
+            /* Tambahkan padding-bottom agar barcode punya ruang */
+            padding-bottom: 8px;
+        }
+        
+        .card img.cover {
+            width: 80%; /* Gambar lebih kecil */
+            height: auto;
+            max-width: 80px;
+            max-height: 120px;
+            margin-bottom: 3px; /* Margin bawah gambar minimal */
+        }
+        .card h2 {
+            font-size: 12px; 
+            min-height: 30px; 
+            margin: 2px 0; /* Margin h2 sangat minimal */
+        }
+        .card p {
+            font-size: 10px;
+            margin: 0; /* Margin vertikal 0 */
+            padding: 0 3px; /* Padding horizontal sangat kecil */
+            border-left: none; 
+        }
+        
+        .card p strong {
+             min-width: 35px;
+             margin-right: 3px;
+        }
+
+        .barcode {
+             margin-top: 5px; 
+             padding-top: 5px;
+        }
+        .barcode svg {
+            width: 90%;
+            height: 20px; /* TINGGI BARCODE DIKURANGI HINGGA 20PX */
+        }
+        .barcode-label {
+            font-size: 8px;
+        }
     }
   </style>
 </head>
@@ -80,14 +186,14 @@
   <h1>📚 Hasil Pencarian Buku</h1>
 
   <div class="card-container" id="tabel-koleksi">
-    <p>Memuat data...</p>
+    <p class="loading-message">Memuat data...</p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script>
-    const supabaseUrl = 'https://lvlufkkwdydpaunqhcjw.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo';
+    const supabaseUrl = 'https://zawtfjszvkuudawrilqg.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd3RmanN6dmt1dWRhd3JpbHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTk2NzMsImV4cCI6MjA3NDk5NTY3M30.CGYz4-QnYb3Hu9p3fV0XoG5J8oicqZsji-YJf2UItQ8';
     const { createClient } = supabase;
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
@@ -104,7 +210,7 @@
         .order('id_inventaris', { ascending: true });
 
       if (error) {
-        document.getElementById('tabel-koleksi').innerHTML = `<p style="color:red;">Gagal memuat data: ${error.message}</p>`;
+        document.getElementById('tabel-koleksi').innerHTML = `<p class="loading-message" style="color:red;">Gagal memuat data: ${error.message}</p>`;
         return;
       }
 
@@ -123,13 +229,13 @@
       container.innerHTML = '';
 
       if (!data.length) {
-        container.innerHTML = '<p>Tidak ditemukan hasil yang cocok.</p>';
+        container.innerHTML = '<p class="loading-message">Tidak ditemukan hasil yang cocok.</p>';
         return;
       }
 
       data.forEach((buku, index) => {
         const id = buku.id_inventaris || `INV-${index + 1}`;
-        const barcodeId = `barcode-${index}`;
+        const barcodeId = `barcode-${id}-${index}`; 
         const gambar = buku.gambar
           ? `${supabaseUrl}/storage/v1/object/public/buku/${buku.gambar}`
           : "https://via.placeholder.com/160x220?text=No+Cover";
@@ -139,11 +245,12 @@
 
         card.innerHTML = `
           <img src="${gambar}" alt="Sampul Buku" class="cover">
-          <h2>${buku.judul || '-'}</h2>
-          <p><strong>Penulis:</strong> ${buku.penulis || '-'}</p>
-          <p><strong>Kategori:</strong> ${buku.kategori || '-'}</p>
-          <p><strong>Klasifikasi:</strong> ${buku.klasifikasi || '-'}</p>
-          <p><strong>Tahun:</strong> ${buku.tahun || '-'}</p>
+          <h2>${buku.judul || 'Judul Tidak Diketahui'}</h2>
+          <p><strong>Penulis:</strong> <span>${buku.penulis || '-'}</span></p>
+          <p><strong>Kategori:</strong> <span>${buku.kategori || '-'}</span></p>
+          <p><strong>Tipe:</strong> <span>${buku.tipe || '-'}</span></p>
+          <p><strong>Klasifikasi:</strong> <span>${buku.klasifikasi || '-'}</span></p>
+          <p><strong>Tahun:</strong> <span>${buku.tahun || '-'}</span></p>
           <div class="barcode">
             <svg id="${barcodeId}"></svg>
             <div class="barcode-label">${id}</div>
@@ -162,6 +269,10 @@
     }
 
     loadKoleksi();
+  </script>  <script>
+    if (sessionStorage.getItem("login") !== "true") {
+      window.location.href = "login.html";
+    }
   </script>
 </body>
 </html>

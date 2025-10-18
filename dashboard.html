@@ -2,86 +2,126 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <title>Dashboard Koleksi Buku</title>
   <link rel="icon" href="ikon.png" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, #00C9FF, #92FE9D);
-      padding: 20px;
+      padding: 0;
       margin: 0;
+      min-height: 100vh;
     }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
     h1 {
       text-align: center;
       color: #2c3e50;
     }
+
     .stat {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
+
     .card {
       background: white;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
-      min-width: 200px;
+      flex-basis: 200px;
+      flex-grow: 1;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
     .card h2 {
       margin: 0;
       font-size: 2em;
       color: #2980b9;
     }
+
     .card p {
       margin-top: 8px;
       font-weight: bold;
       color: #555;
     }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
     canvas {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 30px;
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    @media (min-width: 992px) {
+      .charts-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      main {
+        padding: 40px;
+      }
     }
   </style>
 </head>
 <body>
 
-<h1>📚 Dashboard Koleksi Buku</h1>
+<main>
+  <h1>📚 Dashboard Koleksi Buku</h1>
 
-<div class="stat">
-  <div class="card">
-    <h2 id="totalBuku">0</h2>
-    <p>Total Buku</p>
+  <div class="stat">
+    <div class="card">
+      <h2 id="totalBuku">0</h2>
+      <p>Total Buku</p>
+    </div>
+    <div class="card">
+      <h2 id="jumlahKategori">0</h2>
+      <p>Jumlah Kategori</p>
+    </div>
   </div>
-  <div class="card">
-    <h2 id="jumlahKategori">0</h2>
-    <p>Jumlah Kategori</p>
-  </div>
-  <div class="card">
-    <h2 id="bukuBaru">0</h2>
-    <p>Buku Baru (7 Hari)</p>
-  </div>
-  <div class="card">
-    <h2 id="tanpaKlasifikasi">0</h2>
-    <p>Tanpa Klasifikasi</p>
-  </div>
-</div>
 
-<canvas id="chartKategori" height="100"></canvas>
-<canvas id="chartPenulis" height="100"></canvas>
+  <div class="charts-grid">
+    <div class="card">
+      <canvas id="chartKategori"></canvas>
+    </div>
+    <div class="card">
+      <canvas id="chartPenulis"></canvas>
+    </div>
+  </div>
+
+</main>
+
 
 <script>
   const supabaseClient = supabase.createClient(
-    "https://lvlufkkwdydpaunqhcjw.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo"
+    "https://zawtfjszvkuudawrilqg.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd3RmanN6dmt1dWRhd3JpbHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTk2NzMsImV4cCI6MjA3NDk5NTY3M30.CGYz4-QnYb3Hu9p3fV0XoG5J8oicqZsji-YJf2UItQ8"
   );
 
+  // [EDIT] Fungsi loadStatistik disederhanakan
   async function loadStatistik() {
     const { data: buku } = await supabaseClient.from("buku").select("*");
     if (!buku) return;
@@ -92,15 +132,9 @@
     const kategoriSet = new Set(buku.map(b => b.kategori).filter(Boolean));
     document.getElementById("jumlahKategori").textContent = kategoriSet.size;
 
-    // Buku baru 7 hari terakhir
-    const now = new Date();
-    const semingguLalu = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-    const bukuBaru = buku.filter(b => new Date(b.created_at) >= semingguLalu);
-    document.getElementById("bukuBaru").textContent = bukuBaru.length;
-
-    // Buku tanpa klasifikasi
-    const tanpaKlasifikasi = buku.filter(b => !b.klasifikasi || b.klasifikasi.trim() === "");
-    document.getElementById("tanpaKlasifikasi").textContent = tanpaKlasifikasi.length;
+    // [DIHAPUS] Kalkulasi Buku Baru (7 Hari)
+    
+    // [DIHAPUS] Kalkulasi Tanpa Klasifikasi
 
     // Analisis grafik
     tampilkanChartKategori(buku);
@@ -173,6 +207,10 @@
 
   document.addEventListener("DOMContentLoaded", loadStatistik);
 </script>
-
+  <script>
+    if (sessionStorage.getItem("login") !== "true") {
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>

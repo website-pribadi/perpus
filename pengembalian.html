@@ -2,67 +2,149 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pengembalian Buku</title>
   <link rel="icon" href="ikon.png" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
+    /* Menambahkan box-sizing untuk layout yang lebih baik */
+    html, body {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
+      /* Font stack modern untuk tampilan lebih bersih */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, #00C9FF);
       margin: 0;
       padding: 20px;
       color: #333;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
+
+    /* Container utama untuk membatasi lebar di PC */
+    .container {
+      width: 100%;
+      max-width: 1000px; /* Batas lebar di PC */
+      margin: 0 auto;
+    }
+
     h1 {
       text-align: center;
-      color: white;
+      color: white; /* Warna tetap */
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 25px;
     }
+
+    /* Container untuk tabel: 
+      - Memberi background putih, shadow, dan border-radius
+      - overflow-x: auto agar bisa di-scroll di HP
+    */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      margin-top: 20px;
+      margin: 0; 
+      white-space: nowrap; 
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      /* Menggunakan border-bottom saja untuk tampilan modern */
+      border: none;
+      border-bottom: 1px solid #eee;
+      padding: 14px 18px; /* Padding lebih besar */
+      text-align: left; /* Teks rata kiri agar rapi */
+      vertical-align: middle;
+    }
+
+    th {
+      background: #00bcd4; /* Warna tetap */
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Menghapus border di baris terakhir */
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Efek hover agar lebih interaktif */
+    tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    /* KOLOM PERATAAN BARU: */
+    /* No, Tgl Pinjam, Batas Kembali, Aksi dibuat rata tengah */
+    th:nth-child(1), td:nth-child(1), /* No */
+    th:nth-child(4), td:nth-child(4), /* Tgl Pinjam */
+    th:nth-child(5), td:nth-child(5), /* Batas Kembali */
+    th:nth-child(6), td:nth-child(6) /* Aksi */
+    {
       text-align: center;
     }
-    th {
-      background: #00bcd4;
-      color: white;
+
+    /* Lebar khusus untuk kolom No */
+    th:nth-child(1), td:nth-child(1) {
+      width: 1%; 
     }
+
     button {
-      background: #4caf50;
+      background: #4caf50; /* Warna tetap */
       color: white;
       border: none;
-      padding: 6px 12px;
+      padding: 8px 14px; /* Padding disesuaikan */
       border-radius: 6px;
       cursor: pointer;
+      font-weight: 600; /* Teks lebih tebal */
+      font-size: 14px;
+      transition: all 0.3s ease;
     }
+
+    /* Efek hover yang elegan */
+    button:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
   </style>
 </head>
 <body>
 
-<h1>🔄 Pengembalian Buku</h1>
+<div class="container">
+  <h1>🔄 Pengembalian Buku</h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>Judul Buku</th>
-      <th>Peminjam</th>
-      <th>Tgl Pinjam</th>
-      <th>Batas Kembali</th>
-      <th>Aksi</th>
-    </tr>
-  </thead>
-  <tbody id="daftarPengembalian"></tbody>
-</table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>No</th> <th>Peminjam</th> <th>Judul Buku</th>
+          <th>Tgl Pinjam</th>
+          <th>Batas Kembali</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="daftarPengembalian"></tbody>
+    </table>
+  </div>
+</div>
 
 <script>
   const supabaseClient = supabase.createClient(
-    "https://lvlufkkwdydpaunqhcjw.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo"
+    "https://zawtfjszvkuudawrilqg.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd3RmanN6dmt1dWRhd3JpbHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTk2NzMsImV4cCI6MjA3NDk5NTY3M30.CGYz4-QnYb3Hu9p3fV0XoG5J8oicqZsji-YJf2UItQ8"
   );
 
   async function tampilkanBukuDipinjam() {
@@ -80,6 +162,20 @@
     const tbody = document.getElementById("daftarPengembalian");
     tbody.innerHTML = "";
 
+    if (pinjaman.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 30px; color: #888;">
+            Tidak ada buku yang sedang dipinjam.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Variabel untuk nomor urut
+    let no = 1; 
+
     for (const row of pinjaman) {
       const { data: buku } = await supabaseClient
         .from("buku")
@@ -89,8 +185,7 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${buku?.judul || "-"}</td>
-        <td>${row.nama_peminjam}</td>
+        <td>${no++}</td> <td>${row.nama_peminjam}</td> <td>${buku?.judul || "-"}</td>
         <td>${row.tanggal_pinjam}</td>
         <td>${row.tanggal_kembali}</td>
         <td><button onclick="kembalikan('${row.id}')">Kembalikan</button></td>
@@ -100,12 +195,10 @@
   }
 
   async function kembalikan(id) {
-    const hariIni = new Date().toISOString().split("T")[0];
     const { error } = await supabaseClient
       .from("peminjaman")
       .update({
-        status: "Dikembalikan",
-        tanggal_kembali: hariIni
+        status: "Dikembalikan"
       })
       .eq("id", id);
 
@@ -113,7 +206,7 @@
       alert("Gagal mengembalikan buku.");
     } else {
       alert("✅ Buku berhasil dikembalikan.");
-      tampilkanBukuDipinjam();
+      tampilkanBukuDipinjam(); 
     }
   }
 

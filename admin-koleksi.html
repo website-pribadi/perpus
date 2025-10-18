@@ -66,7 +66,7 @@
         width: 100%;
         display: flex;
         justify-content: center;
-        padding-top: 20px; /* Tambahkan padding atas agar tidak terlalu mepet */
+        padding-top: 20px;
     }
 
     /* --- MOBILE HEADER / HAMBURGER MENU --- */
@@ -82,7 +82,7 @@
       z-index: 999;
       justify-content: space-between;
       align-items: center;
-      position: relative; /* Kontainer untuk posisi absolut teks */
+      position: relative;
     }
     .hamburger-button {
       background: none;
@@ -133,7 +133,7 @@
       border: 1px solid #ddd;
       padding: 8px;
       text-align: center;
-      max-width: 160px;
+      max-width: 120px; 
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -153,53 +153,66 @@
         height: 30px !important;
     }
 
-    /* --- FORM STYLES (PENINGKATAN TAMPILAN) --- */
+    /* --- FORM STYLES --- */
+    
+    /* MODIFIKASI: Form Row untuk 2 kolom (Kategori & Tipe) */
+    .form-row-2 {
+        display: flex;
+        gap: 12px; /* Jarak antara 2 input */
+        margin-bottom: 18px; /* Margin untuk memisahkan dari input Klasifikasi di bawahnya */
+    }
+    
+    /* MODIFIKASI: Membuat 2 input berbagi ruang (masing-masing 50%) */
+    .form-row-2 input[type="text"] {
+        width: 100%; 
+        flex: 1;     
+        margin-bottom: 0; /* Hapus margin bottom default pada input di dalam form-row */
+    }
+    
     .form-card {
       width: 100%;
       max-width: 400px;
       background: white;
       padding: 30px;
-      border-radius: 12px; /* Lebih kecil */
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15); /* Bayangan lebih halus */
-      border: 1px solid #e0e0e0; /* Border tipis */
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      border: 1px solid #e0e0e0;
     }
     .form-card h3 {
       margin-bottom: 25px;
       text-align: center;
       color: #0097a7;
-      border-bottom: 2px solid #00C9FF; /* Garis pemisah */
+      border-bottom: 2px solid #00C9FF;
       padding-bottom: 10px;
     }
     /* Style untuk Input Text dan Number */
     .form-card input[type="text"],
     .form-card input[type="number"] {
       width: 100%;
-      padding: 14px; /* Padding lebih besar */
-      margin-bottom: 18px;
+      padding: 14px;
+      margin-bottom: 18px; 
       border: 1px solid #ccc;
       border-radius: 8px;
       box-sizing: border-box;
       transition: border-color 0.3s;
       font-size: 1em;
     }
-    /* Efek fokus */
     .form-card input[type="text"]:focus,
     .form-card input[type="number"]:focus {
         border-color: #00bcd4;
         box-shadow: 0 0 5px rgba(0, 188, 212, 0.5);
         outline: none;
     }
-    /* Style untuk Input File */
     .form-card input[type="file"] {
         padding: 10px;
         background: #f8f8f8;
-        border: 1px dashed #00bcd4; /* Border putus-putus */
+        border: 1px dashed #00bcd4;
         margin-bottom: 15px;
         border-radius: 8px;
     }
     .form-card button {
       width: 100%;
-      padding: 14px; /* Padding lebih besar */
+      padding: 14px;
       background: #00bcd4;
       color: white;
       font-weight: bold;
@@ -210,7 +223,7 @@
     }
     .form-card button:hover {
       background: #0097a7;
-      transform: translateY(-2px); /* Efek sedikit naik */
+      transform: translateY(-2px);
     }
     
     #btnBatalEdit {
@@ -267,35 +280,25 @@
         padding-top: 60px;
       }
       
-      /* FORM DI MOBILE */
+      /* PERBAIKAN: Membuat Kategori/Tipe tetap berjajar (horizontal) */
       .form-card {
-        padding: 20px; /* Padding form lebih kecil di mobile */
+        padding: 20px;
+        max-width: 100%;
       }
-      .form-card h3 {
-          font-size: 1.2em;
+      .form-row-2 {
+          flex-direction: row; /* TETAP HORIZONTAL */
+          gap: 12px; 
+          margin-bottom: 18px; /* Mengembalikan margin untuk pemisah */
       }
-      .form-card input[type="text"],
-      .form-card input[type="number"],
-      .form-card button {
-        padding: 12px; /* Input/button lebih kecil */
+      .form-row-2 input[type="text"] {
+          margin-bottom: 0; /* Tidak perlu margin bawah karena sudah sejajar */
       }
       
       /* TABEL KHUSUS MOBILE */
       table {
-        min-width: 500px;
+        min-width: 700px;
         table-layout: auto;
         font-size: 0.8em;
-      }
-      th, td {
-        padding: 6px 4px;
-        max-width: none;
-      }
-      .action-button {
-        padding: 4px 6px;
-        font-size: 0.75em;
-      }
-      .barcode-wrapper canvas {
-        width: 60px !important;
       }
     }
   </style>
@@ -335,7 +338,8 @@
                 <th>Judul</th>
                 <th>Penulis</th>
                 <th>Kategori</th>
-                <th>Klasifikasi</th>
+                <th>Klasifikasi</th> 
+                <th>Tipe</th> 
                 <th>Tahun</th>
                 <th>Barcode</th>
                 <th>Aksi</th>
@@ -352,8 +356,14 @@
         <form onsubmit="tambahBuku(); return false;">
           <input id="judulBaru" placeholder="Judul Buku" required type="text"/>
           <input id="penulisBaru" placeholder="Penulis" required type="text"/>
-          <input id="kategoriBaru" placeholder="Kategori" required type="text"/>
-          <input id="klasifikasiBaru" placeholder="Klasifikasi" type="text"/>
+          
+          <div class="form-row-2">
+            <input id="kategoriBaru" placeholder="Kategori" required type="text"/>
+            <input id="tipeBaru" placeholder="Tipe" required type="text"/> 
+          </div>
+          
+          <input id="klasifikasiBaru" placeholder="Klasifikasi" required type="text"/> 
+          
           <input id="tahunBaru" placeholder="Tahun Terbit" required type="number"/>
           
           <label for="gambarBaru" style="display: block; margin-bottom: 5px; color: #555;">Sampul Buku (Opsional):</label>
@@ -362,17 +372,19 @@
           <img id="previewGambar" src="" style="width: 120px; display: none; margin-bottom: 10px; border-radius: 6px; object-fit: cover;" alt="Preview Sampul"/>
           
           <button id="btnSimpanBuku" type="submit">Simpan</button>
-	  <button type="button" id="btnBatalEdit" style="display:none;margin-top:10px;">
-	    ❌ Batal Edit
-	  </button>
+      <button type="button" id="btnBatalEdit" style="display:none;margin-top:10px;">
+        ❌ Batal Edit
+      </button>
         </form>
       </div>
     </div>
   </div>
 
   <script>
-    const supabaseUrl = "https://lvlufkkwdydpaunqhcjw.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bHVma2t3ZHlkcGF1bnFoY2p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDc5OTMsImV4cCI6MjA2ODA4Mzk5M30.3QESPNURjPOYRbtgQG-gbgf_1xSvWIP99q-X1Nd0ypo";
+    // GANTI DENGAN KUNCI DAN URL SUPABASE ANDA YANG BENAR
+    const supabaseUrl = "https://zawtfjszvkuudawrilqg.supabase.co"; 
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd3RmanN6dmt1dWRhd3JpbHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0MTk2NzMsImV4cCI6MjA3NDk5NTY3M30.CGYz4-QnYb3Hu9p3fV0XoG5J8oicqZsji-YJf2UItQ8";
+
     const { createClient } = supabase;
     const db = createClient(supabaseUrl, supabaseKey);
 
@@ -399,6 +411,17 @@
       const tbody = document.getElementById("tabelDaftarBuku");
       tbody.innerHTML = "";
 
+      if (error) {
+          console.error("❌ Gagal mengambil data dari Supabase (Cek RLS/API Key):", error);
+          tbody.innerHTML = `<tr><td colspan="9" style="color: red; font-weight: bold;">❌ ERROR: Gagal memuat data buku. Cek Console Developer (F12) dan pastikan RLS untuk tabel 'buku' sudah diatur untuk role 'anon' (SELECT).</td></tr>`;
+          return;
+      }
+      
+      if (!books || books.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9">Tidak ada data buku yang ditemukan. Silakan tambahkan buku baru!</td></tr>`;
+          return;
+      }
+
       books.forEach((buku, i) => {
         const idInv = buku.id_inventaris || `INV-${String(i + 1).padStart(3, '0')}`;
         const tr = document.createElement("tr");
@@ -407,7 +430,8 @@
           <td>${buku.judul}</td>
           <td>${buku.penulis}</td>
           <td>${buku.kategori}</td>
-          <td>${buku.klasifikasi || ''}</td>
+          <td>${buku.klasifikasi || ''}</td> 
+          <td>${buku.tipe || ''}</td> 
           <td>${buku.tahun}</td>
           <td>
             <div class="barcode-wrapper">
@@ -434,13 +458,14 @@
       const judul = document.getElementById("judulBaru").value.trim();
       const penulis = document.getElementById("penulisBaru").value.trim();
       const kategori = document.getElementById("kategoriBaru").value.trim();
-      const klasifikasi = document.getElementById("klasifikasiBaru").value.trim();
+      const klasifikasi = document.getElementById("klasifikasiBaru").value.trim(); 
+      const tipe = document.getElementById("tipeBaru").value.trim(); 
       const tahun = parseInt(document.getElementById("tahunBaru").value);
       const fileInput = document.getElementById("gambarBaru");
       const file = fileInput.files[0];
       const btnSimpan = document.getElementById("btnSimpanBuku");
       
-      if (!judul || !penulis || !kategori || isNaN(tahun)) {
+      if (!judul || !penulis || !kategori || !klasifikasi || !tipe || isNaN(tahun)) {
         alert("❌ Lengkapi semua data buku!");
         return;
       }
@@ -452,7 +477,7 @@
 
       try {
           if (bukuSedangDiedit) {
-            const updateData = { judul, penulis, kategori, klasifikasi, tahun };
+            const updateData = { judul, penulis, kategori, klasifikasi, tipe, tahun };
             if (file) {
               const ext = file.name.split('.').pop();
               const namaFileBaru = `${Date.now()}_EDIT_${bukuSedangDiedit}.${ext}`;
@@ -464,7 +489,7 @@
             if (error) throw new Error("Gagal update buku: " + error.message);
 
             alert("✅ Buku berhasil diperbarui!");
-            resetForm();
+            resetForm(); 
             tampilDaftarBuku();
             document.getElementById("menu-daftar").click();
             
@@ -480,11 +505,11 @@
               if (uploadError) throw new Error("Gagal mengupload gambar: " + uploadError.message);
             }
 
-            const { error } = await db.from("buku").insert([{ judul, penulis, kategori, klasifikasi, tahun, id_inventaris: idInventaris, gambar: namaFile }]);
+            const { error } = await db.from("buku").insert([{ judul, penulis, kategori, klasifikasi, tipe, tahun, id_inventaris: idInventaris, gambar: namaFile }]);
             if (error) throw new Error("Gagal menyimpan buku: " + error.message);
             
             alert("✅ Buku berhasil disimpan!");
-            document.querySelector("form").reset();
+            resetForm(); 
             tampilDaftarBuku();
             document.getElementById("menu-daftar").click();
           }
@@ -498,10 +523,16 @@
     
     function resetForm() {
         bukuSedangDiedit = null;
-        document.querySelector("form").reset();
+        document.querySelector("form").reset(); // Reset semua input form
         document.getElementById("btnSimpanBuku").innerText = "Simpan";
         document.getElementById("formTitle").innerText = "Tambah Buku";
+        
+        // --- PERBAIKAN: Mengosongkan dan menyembunyikan pratinjau gambar ---
+        document.getElementById("gambarBaru").value = ''; 
+        document.getElementById("previewGambar").src = '';
         document.getElementById("previewGambar").style.display = "none";
+        // --- Akhir Perbaikan ---
+
         document.getElementById("btnBatalEdit").style.display = "none";
     }
 
@@ -514,19 +545,21 @@
       document.getElementById("judulBaru").value = data.judul;
       document.getElementById("penulisBaru").value = data.penulis;
       document.getElementById("kategoriBaru").value = data.kategori;
-      document.getElementById("klasifikasiBaru").value = data.klasifikasi || "";
+      document.getElementById("klasifikasiBaru").value = data.klasifikasi || ""; 
+      document.getElementById("tipeBaru").value = data.tipe || ""; 
       document.getElementById("tahunBaru").value = data.tahun;
-      document.getElementById("gambarBaru").value = "";
-	const gambarUrl = data.gambar
-	  ? `${supabaseUrl}/storage/v1/object/public/buku/${data.gambar}`
-	  : null;
-	const preview = document.getElementById("previewGambar");
-	if (gambarUrl) {
-	  preview.src = gambarUrl;
- 	 preview.style.display = "block";
-	} else {
-	  preview.style.display = "none";
-	}
+      document.getElementById("gambarBaru").value = ""; 
+
+    const gambarUrl = data.gambar
+      ? `${supabaseUrl}/storage/v1/object/public/buku/${data.gambar}`
+      : null;
+    const preview = document.getElementById("previewGambar");
+    if (gambarUrl) {
+      preview.src = gambarUrl;
+     preview.style.display = "block";
+    } else {
+      preview.style.display = "none";
+    }
 
       bukuSedangDiedit = id;
       document.getElementById("btnSimpanBuku").innerText = "Update";
@@ -595,19 +628,19 @@
           if (file) {
               preview.src = URL.createObjectURL(file);
               preview.style.display = "block";
-          } else if (!bukuSedangDiedit) {
+          } else if (!bukuSedangDiedit) { 
               preview.style.display = "none";
           }
       });
       
       document.getElementById("menu-daftar").click();
     });
-  </script>
-
+  </script>  
   <script>
+    // Penanganan Login
     if (sessionStorage.getItem("login") !== "true") {
       window.location.href = "login.html";
     }
-  </script>
+  </script> 
 </body>
 </html>
