@@ -17,7 +17,7 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      overflow-x: hidden; 
+      overflow-x: hidden;
     }
 
     h1 {
@@ -42,41 +42,55 @@
     /* 2.5. PENGATURAN KHUSUS UNTUK 1 HASIL */
     .card-container.single-result {
       max-width: 1200px;
-      grid-template-columns: 320px; 
-      justify-content: center; 
+      grid-template-columns: 320px;
+      justify-content: center;
     }
 
     /* 3. CARD STYLING (Desktop) */
     .card {
       background: white;
       border-radius: 16px;
-      /* MODIFIKASI: BAYANGAN KARTU LEBIH MENONJOL */
-      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22); 
+      /* MODIFIKASI: BAYANGAN KARTU LEBIH MENONJOL (sudah baik) */
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
       padding: 20px;
       text-align: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 480px; 
+      min-height: auto; /* PERBAIKAN: Tinggi minimum disetel ke auto */
+      padding-bottom: 20px; /* Tambahkan sedikit padding bawah agar barcode tidak terlalu mepet */
     }
 
     .card:hover {
-      transform: translateY(-8px); /* Sedikit lebih naik */
-      /* MODIFIKASI: BAYANGAN HOVER LEBIH MENONJOL */
+      transform: translateY(-8px);
       box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
     }
 
+    /* --- STYLING SAMPU BUKU (Fokus pada Menonjol & Utuh) --- */
     .card img.cover {
-      width: 160px;
-      height: 220px; 
+      width: 140px;
+      height: auto; /* PERBAIKAN: Tinggi auto agar menjaga rasio aspek */
+      max-height: 200px; /* Batasi tinggi agar tidak terlalu panjang */
       border-radius: 8px;
       margin-bottom: 15px;
-      object-fit: contain; 
-      /* MODIFIKASI: BAYANGAN COVER LEBIH MENONJOL (opsional, bisa pakai yang lama) */
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); 
-      background-color: #f7f7f7; 
+      object-fit: cover; /* PERBAIKAN: 'contain' agar gambar tidak terpotong */
+      background-color: #e0f7fa; /* Latar belakang serasi untuk area kosong */
+      
+      /* MODIFIKASI: BAYANGAN LEBIH KUAT UNTUK MENONJOL */
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 8px 12px rgba(0, 0, 0, 0.2);
+      
+      /* MODIFIKASI: FILTER UNTUK KECERAHAN/KONTRAST */
+      filter: brightness(1.05) contrast(1.05) saturate(1.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
     }
+
+    .card img.cover:hover {
+        transform: scale(1.03); /* Efek zoom ringan saat hover */
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35), 0 10px 15px rgba(0, 0, 0, 0.25);
+        filter: brightness(1.1) contrast(1.1) saturate(1.25); /* Filter lebih intens saat hover */
+    }
+    /* ---------------------------------------------------- */
 
     .card h2 {
       font-size: 20px;
@@ -130,37 +144,37 @@
         font-size: 18px;
         color: #777;
         margin: 50px auto;
-        text-align: center; 
+        text-align: center;
         width: 100%;
-        grid-column: 1 / -1; 
+        grid-column: 1 / -1;
     }
 
     /* ========================================= */
-    /* 4. MEDIA QUERY (Responsif - OPTIMASI TINGGI VERTIKAL DI HP) */
+    /* 4. MEDIA QUERY (Responsif) */
     /* ========================================= */
     @media (max-width: 600px) {
         h1 {
             font-size: 24px;
-            margin: 15px 10px 15px 0; 
+            margin: 15px 10px 15px 0;
         }
         .card-container {
-            width: 20%;
-            padding: 0 10px 15px 0; 
-            gap: 8px; 
-            grid-template-columns: repeat(2, 1fr); 
+            width: 95%; /* Diperluas ke 95% agar lebih masuk akal */
+            padding: 0 10px 15px 10px; /* Sesuaikan padding */
+            gap: 15px; /* Sesuaikan gap */
+            grid-template-columns: repeat(2, 1fr);
         }
         
         .card-container.single-result {
             max-width: 100%;
-            grid-template-columns: repeat(2, 1fr); 
+            grid-template-columns: 1fr; /* Di mobile, 1 kolom untuk single result */
+            padding: 0 15% 15px 15%; /* Tengah-tengahkan */
         }
         
         .card {
-            padding: 4px; 
+            padding: 8px; /* Tambah padding sedikit */
             border-radius: 8px;
-            min-height: auto; 
+            min-height: auto;
             padding-bottom: 8px;
-            /* Perbaiki box-shadow agar tidak terlalu besar di mobile */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.12);
         }
         
@@ -170,45 +184,56 @@
         }
 
         .card img.cover {
-            width: 80%; 
+            width: 80%;
             height: auto;
             max-width: 80px;
-            max-height: 120px; 
-            margin-bottom: 3px; 
-            /* Perbaiki box-shadow agar tidak terlalu besar di mobile */
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); 
+            max-height: 120px;
+            margin-bottom: 3px;
+            object-fit: contain;
+            background-color: #e0f7fa;
+            
+            /* Sesuaikan bayangan dan filter untuk mobile, lebih ringan */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2), 0 3px 6px rgba(0, 0, 0, 0.15);
+            filter: brightness(1.03) contrast(1.03) saturate(1.1);
         }
+        
+        .card img.cover:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.2);
+            filter: brightness(1.08) contrast(1.08) saturate(1.18);
+        }
+        
         .card h2 {
-            font-size: 12px; 
-            min-height: 30px; 
-            margin: 2px 0; 
+            font-size: 12px;
+            min-height: 30px;
+            margin: 2px 0;
         }
         .card p {
             font-size: 10px;
-            margin: 0; 
-            padding: 0 3px; 
-            border-left: none; 
+            margin: 0;
+            padding: 0 3px;
+            border-left: none;
         }
         
         .card p strong {
-             min-width: 35px;
-             margin-right: 3px;
+            min-width: 35px;
+            margin-right: 3px;
         }
 
         .barcode {
-             margin-top: 5px; 
-             padding-top: 5px;
+            margin-top: 5px;
+            padding-top: 5px;
         }
         .barcode svg {
             width: 90%;
-            height: 15px; 
+            height: 15px;
         }
         .barcode-label {
             font-size: 8px;
         }
         
         .loading-message {
-             grid-column: 1 / -1;
+            grid-column: 1 / -1;
         }
     }
   </style>
@@ -259,6 +284,8 @@
       const hasil = semuaBuku.filter(b =>
         (b.judul || '').toLowerCase().includes(kataKunci) ||
         (b.penulis || '').toLowerCase().includes(kataKunci) ||
+        (b.klasifikasi || '').toLowerCase().includes(kataKunci) ||
+        (b.tipe || '').toLowerCase().includes(kataKunci) ||
         (b.kategori || '').toLowerCase().includes(kataKunci)
       );
 
@@ -282,7 +309,7 @@
 
       data.forEach((buku, index) => {
         const id = buku.id_inventaris || `INV-${index + 1}`;
-        const barcodeId = `barcode-${id}-${index}`; 
+        const barcodeId = `barcode-${id}-${index}`;
         const gambar = buku.gambar
           ? `${supabaseUrl}/storage/v1/object/public/buku/${buku.gambar}`
           : "https://via.placeholder.com/160x220?text=No+Cover";
